@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"math"
-	"math/rand"
-	"time"
 
 	"github.com/faiface/pixel"
+	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
 	"golang.org/x/image/colornames"
 )
@@ -20,7 +18,7 @@ func run() {
 	cfg := pixelgl.WindowConfig{
 		Title:  "Pixel Rocks!",
 		Bounds: pixel.R(0, 0, 1024, 768),
-		VSync:  false,
+		VSync:  true,
 	}
 
 	// Create the window
@@ -28,71 +26,36 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	//win.SetSmooth(true)
+	win.SetSmooth(true)
 
-	spritesheet, err := loadPicture("trees.png")
-	if err != nil {
-		panic(err)
-	}
-	batch := pixel.NewBatch(&pixel.TrianglesData{}, spritesheet)
-	var treeFrames []pixel.Rect
-	for x := spritesheet.Bounds().Min.X; x < spritesheet.Bounds().Max.X; x += 32 {
-		for y := spritesheet.Bounds().Min.Y; y < spritesheet.Bounds().Max.Y; y += 32 {
-			treeFrames = append(treeFrames, pixel.R(x, y, x+32, y+32))
-		}
-	}
+	imd := imdraw.New(nil)
 
-	var (
-		camPos       = pixel.ZV
-		camSpeed     = 500.0
-		camZoom      = 1.0
-		camZoomSpeed = 1.2
-		frames       = 0
-		second       = time.Tick(time.Second)
-	)
+	imd.Color = colornames.Blueviolet
+	imd.EndShape = imdraw.RoundEndShape
+	imd.Push(pixel.V(100, 100), pixel.V(700, 100))
+	imd.EndShape = imdraw.SharpEndShape
+	imd.Push(pixel.V(100, 500), pixel.V(700, 500))
+	imd.Line(30)
 
-	lastTime := time.Now()
+	imd.Color = colornames.Limegreen
+	imd.Push(pixel.V(500, 500))
+	imd.Circle(300, 50)
+	imd.Color = colornames.Navy
+	imd.Push(pixel.V(200, 500), pixel.V(800, 500))
+	imd.Ellipse(pixel.V(120, 80), 0)
+
+	imd.Color = colornames.Red
+	imd.EndShape = imdraw.RoundEndShape
+	imd.Push(pixel.V(500, 350))
+	imd.CircleArc(150, -math.Pi, 0, 30)
 
 	// Keep going till the window is closed
 	for !win.Closed() {
-		frames++
-		select {
-		case <-second:
-			win.SetTitle(fmt.Sprintf("%s | FPS: %d", cfg.Title, frames))
-			frames = 0
-		default:
-		}
-		// Update the logic
-		dt := time.Since(lastTime).Seconds()
-		lastTime = time.Now()
-		cam := pixel.IM.Scaled(camPos, camZoom).Moved(win.Bounds().Center().Sub(camPos))
-		win.SetMatrix(cam)
-
-		// Capture user input
-		if win.Pressed(pixelgl.MouseButtonLeft) {
-			tree := pixel.NewSprite(spritesheet, treeFrames[rand.Intn(len(treeFrames))])
-			mouse := cam.Unproject(win.MousePosition())
-			tree.Draw(batch, pixel.IM.Scaled(pixel.ZV, 4).Moved(mouse))
-		}
-		if win.Pressed(pixelgl.KeyLeft) {
-			camPos.X -= camSpeed * dt
-		}
-		if win.Pressed(pixelgl.KeyRight) {
-			camPos.X += camSpeed * dt
-		}
-		if win.Pressed(pixelgl.KeyDown) {
-			camPos.Y -= camSpeed * dt
-		}
-		if win.Pressed(pixelgl.KeyUp) {
-			camPos.Y += camSpeed * dt
-		}
-		camZoom *= math.Pow(camZoomSpeed, win.MouseScroll().Y)
 
 		// Clear the frame
-		win.Clear(colornames.Forestgreen)
+		win.Clear(colornames.Aliceblue)
 
-		// Draw a trees
-		batch.Draw(win)
+		imd.Draw(win)
 
 		// Update the window
 		win.Update()
