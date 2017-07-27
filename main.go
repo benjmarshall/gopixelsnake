@@ -1,11 +1,11 @@
 package main
 
 import (
-	"math"
+	"time"
 
 	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/faiface/pixel/text"
 	"golang.org/x/image/colornames"
 )
 
@@ -18,7 +18,7 @@ func run() {
 	cfg := pixelgl.WindowConfig{
 		Title:  "Pixel Rocks!",
 		Bounds: pixel.R(0, 0, 1024, 768),
-		VSync:  true,
+		VSync:  false,
 	}
 
 	// Create the window
@@ -28,36 +28,38 @@ func run() {
 	}
 	win.SetSmooth(true)
 
-	imd := imdraw.New(nil)
+	fps := time.Tick(time.Second / 120)
 
-	imd.Color = colornames.Blueviolet
-	imd.EndShape = imdraw.RoundEndShape
-	imd.Push(pixel.V(100, 100), pixel.V(700, 100))
-	imd.EndShape = imdraw.SharpEndShape
-	imd.Push(pixel.V(100, 500), pixel.V(700, 500))
-	imd.Line(30)
+	face, err := loadTTF("intuitive.ttf", 80)
+	if err != nil {
+		panic(err)
+	}
 
-	imd.Color = colornames.Limegreen
-	imd.Push(pixel.V(500, 500))
-	imd.Circle(300, 50)
-	imd.Color = colornames.Navy
-	imd.Push(pixel.V(200, 500), pixel.V(800, 500))
-	imd.Ellipse(pixel.V(120, 80), 0)
+	atlas := text.NewAtlas(face, text.ASCII)
+	txt := text.New(win.Bounds().Center(), atlas)
 
-	imd.Color = colornames.Red
-	imd.EndShape = imdraw.RoundEndShape
-	imd.Push(pixel.V(500, 350))
-	imd.CircleArc(150, -math.Pi, 0, 30)
+	txt.Color = colornames.Lightgray
 
 	// Keep going till the window is closed
 	for !win.Closed() {
 
-		// Clear the frame
-		win.Clear(colornames.Aliceblue)
+		txt.WriteString(win.Typed())
+		if win.JustPressed(pixelgl.KeyEnter) || win.Repeated(pixelgl.KeyEnter) {
+			txt.WriteRune('\n')
+		}
+		if win.JustPressed(pixelgl.KeyTab) || win.Repeated(pixelgl.KeyTab) {
+			txt.WriteRune('\t')
+		}
 
-		imd.Draw(win)
+		// Clear the frame
+		win.Clear(colornames.Darkcyan)
+
+		txt.Draw(win, pixel.IM.Moved(win.Bounds().Center().Sub(txt.Bounds().Center())))
 
 		// Update the window
 		win.Update()
+
+		// Synchonise the framerate
+		<-fps
 	}
 }
