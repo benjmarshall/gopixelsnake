@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/benjmarshall/gosnake/snake"
+	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -26,21 +28,21 @@ func run() {
 	}
 
 	// Setup Game Configuration
-	gameCFG := newGameCFG(gameAreaDimsType{700, 700}, 5, cfg)
+	gameCFG := types.NewGameCFG(700, 700, 5, cfg)
 
 	// Create Game Area Shape
 	imd := imdraw.New(nil)
 	imd.Color = colornames.White
-	imd.Push(gameCFG.gameArea.Min, gameCFG.gameArea.Max)
+	imd.Push(gameCFG.GetGameAreaAsVecs())
 	imd.Rectangle(2)
 
 	// Initialize a new snake
-	snake := newSnake(gameCFG)
+	snake := snake.NewSnake(gameCFG)
 
 	// Create a snake shape
 	imd.Color = colornames.Purple
-	imd.Push(snake.getHeadPos(), snake.getTailPos())
-	imd.Line(gameCFG.gameGridSize)
+	imd.Push(snake.GetHeadPos(), snake.GetTailPos())
+	imd.Line(gameCFG.GetGridSize())
 
 	// Keep going till the window is closed
 	for !win.Closed() {
