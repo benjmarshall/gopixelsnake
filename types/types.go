@@ -10,11 +10,12 @@ import (
 
 // GameCFGType is a struct used to define the configuration of the game
 type GameCFGType struct {
-	gameAreaOrig   pixel.Vec
-	gameAreaDims   gameAreaDimsType
-	gameArea       pixel.Rect
-	gameGridSize   float64
-	gameGridMatrix pixel.Matrix
+	gameAreaOrig            pixel.Vec
+	gameAreaDims            gameAreaDimsType
+	gameArea                pixel.Rect
+	gameAreaBorderThickness float64
+	gameGridSize            float64
+	gameGridMatrix          pixel.Matrix
 }
 
 type gameAreaDimsType struct {
@@ -23,16 +24,17 @@ type gameAreaDimsType struct {
 }
 
 // NewGameCFG returns and initialised Game Configuration Struct
-func NewGameCFG(xSize float64, ySize float64, gridSize float64, winCFG pixelgl.WindowConfig) GameCFGType {
+func NewGameCFG(xSize float64, ySize float64, borderWeight float64, gridSize float64, winCFG pixelgl.WindowConfig) GameCFGType {
 	gameCFG := new(GameCFGType)
 	if math.Mod(xSize, gridSize) != 0 || math.Mod(ySize, gridSize) != 0 {
 		panic(errors.New("game Area must be a multiple of the grid size"))
 	}
 	gameAreaMargin := (winCFG.Bounds.H() - ySize) / 2
 	gameCFG.gameAreaDims = gameAreaDimsType{x: xSize, y: ySize}
-	gameCFG.gameArea = pixel.R(gameAreaMargin, gameAreaMargin, gameAreaMargin+xSize, gameAreaMargin+ySize)
+	gameCFG.gameArea = pixel.R(gameAreaMargin, gameAreaMargin, gameAreaMargin+xSize+1, gameAreaMargin+ySize+1)
+	gameCFG.gameAreaBorderThickness = borderWeight
 	gameCFG.gameGridSize = gridSize
-	gameCFG.gameGridMatrix = pixel.IM.Scaled(pixel.ZV, 1/gridSize)
+	gameCFG.gameGridMatrix = pixel.IM.Scaled(pixel.ZV, gridSize).Moved(pixel.V(gridSize/2, gridSize/2))
 	return *gameCFG
 }
 
@@ -54,4 +56,9 @@ func (cfg *GameCFGType) GetGameAreaDims() (x float64, y float64) {
 // GetGameAreaAsVecs returns the vectors representing the game area
 func (cfg *GameCFGType) GetGameAreaAsVecs() (min pixel.Vec, max pixel.Vec) {
 	return cfg.gameArea.Min, cfg.gameArea.Max
+}
+
+// GetBorderWeight returns the weight in pixels of the border of the game area
+func (cfg *GameCFGType) GetBorderWeight() float64 {
+	return cfg.gameAreaBorderThickness
 }

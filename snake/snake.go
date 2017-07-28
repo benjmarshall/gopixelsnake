@@ -46,8 +46,7 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	snake.length = 5
 	snake.speed = 1
 	x, y := gameCFG.GetGameAreaDims()
-	m := gameCFG.GetGridMatrix()
-	snake.headPos = m.Project(pixel.V(round(float64(r.Intn(int(x))), gameCFG.GetGridSize()), round(float64(r.Intn(int(y))), gameCFG.GetGridSize())))
+	snake.headPos = pixel.V(float64(r.Intn(int(x/gameCFG.GetGridSize()))), float64(r.Intn(int(y/gameCFG.GetGridSize()))))
 	switch i := r.Intn(3); {
 	case i == 0:
 		snake.currentDirection = UP
@@ -70,19 +69,19 @@ func (s *Type) dir() pixel.Vec {
 
 // GetHeadPos returns the position of the head of the snake in the game area coordinate plane
 func (s *Type) GetHeadPos() pixel.Vec {
-	return roundVec(s.gameCFG.GetGridMatrix().Unproject(s.headPos), 1)
+	return roundVec(s.gameCFG.GetGridMatrix().Project(s.headPos), 1)
 }
 
 // GetTailPos returns the position of the tail of the snake in the game area coordinate plane
 func (s *Type) GetTailPos() pixel.Vec {
-	return roundVec(s.gameCFG.GetGridMatrix().Unproject(s.tailPos), 1)
+	return roundVec(s.gameCFG.GetGridMatrix().Project(s.tailPos), 1)
 }
 
 // GetPositionPoints returns the list of the snakes previous turn positions in the game area coordinate plane
 func (s *Type) GetPositionPoints() []pixel.Vec {
 	positions := []pixel.Vec{}
 	for _, pos := range s.pointsList {
-		positions = append(positions, roundVec(s.gameCFG.GetGridMatrix().Unproject(pos), 1))
+		positions = append(positions, roundVec(s.gameCFG.GetGridMatrix().Project(pos), 1))
 	}
 	return positions
 }
@@ -100,7 +99,7 @@ func (s *Type) Update(eaten bool, dir Direction) {
 	}
 
 	if dir != NOCHANGE {
-		log.Println("Changing direction")
+		//log.Println("Changing direction")
 		// Update the direction
 		s.currentDirection = dir
 		// Push the current head position into the points stack
@@ -108,13 +107,13 @@ func (s *Type) Update(eaten bool, dir Direction) {
 	}
 	if len(s.pointsList) > 0 {
 		if s.tailPos == s.pointsList[len(s.pointsList)-1] {
-			log.Println("Checking tail pos")
+			//log.Println("Checking tail pos")
 			// If the tail is on our last point the remove it from the current stack
 			if len(s.pointsList) <= 1 {
-				log.Println("only 1")
+				//log.Println("only 1")
 				s.pointsList = []pixel.Vec{}
 			} else {
-				log.Println("mod list")
+				//log.Println("mod list")
 				s.pointsList = s.pointsList[0 : len(s.pointsList)-1]
 			}
 		}
@@ -126,15 +125,15 @@ func (s *Type) Update(eaten bool, dir Direction) {
 	if len(s.pointsList) == 0 {
 		s.tailPos = s.tailPos.Add(s.currentDirection.val)
 	} else {
-		log.Println("Moving tail towards point")
+		//log.Println("Moving tail towards point")
 		vec := s.tailPos.To(s.pointsList[len(s.pointsList)-1]).Unit()
 		s.tailPos = s.tailPos.Add(vec)
 		log.Println(vec)
 	}
-	log.Println("Snake after update:")
-	log.Println(s.headPos)
-	log.Println(s.pointsList)
-	log.Println(s.tailPos)
+	// log.Println("Snake after update:")
+	// log.Println(s.headPos)
+	// log.Println(s.pointsList)
+	// log.Println(s.tailPos)
 }
 
 func round(x, unit float64) float64 {

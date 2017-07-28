@@ -32,7 +32,7 @@ func run() {
 	}
 
 	// Setup Game Configuration
-	gameCFG := types.NewGameCFG(700, 700, 10, cfg)
+	gameCFG := types.NewGameCFG(700, 700, 2, 10, cfg)
 
 	// Initialize a new snake
 	s := snake.NewSnake(gameCFG)
@@ -55,7 +55,7 @@ func run() {
 	// Draw the initial frames	// Clear the frame
 	win.Clear(colornames.Darkcyan)
 	drawGameBackground(win, imdArea, &gameCFG)
-	drawSnake(win, imdGame, &gameCFG, &s)
+	drawSnakeRect(win, imdGame, &gameCFG, &s)
 	win.Update()
 
 	// Start the snake timer
@@ -92,12 +92,16 @@ func run() {
 			// Reset the user inputs
 			dir = snake.NOCHANGE
 			keyPressed = false
+			// Debug
+			log.Println(s.GetHeadPos())
+			log.Println(s.GetPositionPoints())
+			log.Println(s.GetTailPos())
 		default:
 		}
 
 		// Draw the sframe
 		drawGameBackground(win, imdArea, &gameCFG)
-		drawSnake(win, imdGame, &gameCFG, &s)
+		drawSnakeRect(win, imdGame, &gameCFG, &s)
 		win.Update()
 		frames++
 
@@ -115,12 +119,17 @@ func run() {
 func drawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType) {
 	imd.Clear()
 	imd.Color = colornames.White
-	imd.Push(gameCFG.GetGameAreaAsVecs())
+	min, max := gameCFG.GetGameAreaAsVecs()
+	minVec := pixel.V((gameCFG.GetBorderWeight()*2)+1, (gameCFG.GetBorderWeight()*2)+1)
+	maxVec := pixel.V((gameCFG.GetBorderWeight()*2)+2, (gameCFG.GetBorderWeight()*2)+2)
+	min = min.Sub(minVec)
+	max = max.Add(maxVec)
+	imd.Push(min, max)
 	imd.Rectangle(2)
 	imd.Draw(win)
 }
 
-func drawSnake(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, s *snake.Type) {
+func drawSnakeLine(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, s *snake.Type) {
 	imd.Clear()
 	imd.Color = colornames.Purple
 	positions := []pixel.Vec{s.GetHeadPos()}
@@ -128,5 +137,21 @@ func drawSnake(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGTy
 	positions = append(positions, s.GetTailPos())
 	imd.Push(positions...)
 	imd.Line(gameCFG.GetGridSize())
+	imd.Draw(win)
+}
+
+func drawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, s *snake.Type) {
+	imd.Clear()
+	imd.Color = colornames.Purple
+	positions := []pixel.Vec{s.GetHeadPos()}
+	positions = append(positions, s.GetPositionPoints()...)
+	positions = append(positions, s.GetTailPos())
+	for _, pos := range positions {
+		vec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
+		min := pos.Sub(vec)
+		max := pos.Add(vec)
+		imd.Push(min, max)
+	}
+	imd.Rectangle(0)
 	imd.Draw(win)
 }
