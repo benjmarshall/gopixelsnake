@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/benjmarshall/gosnake/snake"
@@ -41,13 +42,19 @@ func run() {
 
 	// Initialize a new snake
 	s := snake.NewSnake(gameCFG)
-	log.Println(s)
+
+	// Generate a berry
+	berry := generateRandomBerry(&gameCFG)
+	log.Printf("Berry: %v", berry)
 
 	// Create the Game Background Shape
 	imdArea := imdraw.New(nil)
 
 	// Create the Game Contents Shape
 	imdGame := imdraw.New(nil)
+
+	// Create a berry Contents Shape
+	imdBerry := imdraw.New(nil)
 
 	// Create some variables
 	var (
@@ -63,6 +70,7 @@ func run() {
 	win.Clear(colornames.Darkcyan)
 	drawGameBackground(win, imdArea, &gameCFG)
 	drawSnakeRect(win, imdGame, &gameCFG, &s)
+	drawBerry(win, imdBerry, &gameCFG, berry)
 	win.Update()
 
 	// Start the snake timer
@@ -103,10 +111,10 @@ func run() {
 				dir = snake.NOCHANGE
 				keyPressed = false
 				// Debug
-				log.Println(s.GetHeadPos())
-				log.Println(s.GetPositionPoints())
-				log.Println(s.GetTailPos())
-				if !checkSnakeOK(&s, &gameCFG) {
+				// log.Println(s.GetHeadPos())
+				// log.Println(s.GetPositionPoints())
+				// log.Println(s.GetTailPos())
+				if !s.CheckSnakeOK(&gameCFG) {
 					gameOver = true
 					gameRunning = false
 				}
@@ -118,6 +126,7 @@ func run() {
 		// Always draw the game
 		drawGameBackground(win, imdArea, &gameCFG)
 		drawSnakeRect(win, imdGame, &gameCFG, &s)
+		drawBerry(win, imdBerry, &gameCFG, berry)
 
 		// Check if the game is over
 		if gameOver {
@@ -171,6 +180,17 @@ func drawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameC
 	imd.Draw(win)
 }
 
+func drawBerry(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, berry pixel.Vec) {
+	imd.Clear()
+	imd.Color = colornames.Orangered
+	vec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
+	min := berry.Sub(vec)
+	max := berry.Add(vec)
+	imd.Push(min, max)
+	imd.Rectangle(0)
+	imd.Draw(win)
+}
+
 func drawGameOver(win *pixelgl.Window, atlas *text.Atlas, gameCFG *types.GameCFGType) {
 	gameoverMessage := text.New(gameCFG.GetGameAreaAsRec().Center(), atlas)
 	lines := []string{
@@ -186,12 +206,11 @@ func drawGameOver(win *pixelgl.Window, atlas *text.Atlas, gameCFG *types.GameCFG
 	gameoverMessage.Draw(win, pixel.IM.Scaled(gameoverMessage.Orig, 4))
 }
 
-func checkSnakeOK(s *snake.Type, gameCFG *types.GameCFGType) bool {
-	if !gameCFG.GetGameAreaAsRec().Contains(s.GetHeadPos()) {
-		log.Println("Game Over")
-		log.Printf("Snake Head: %v", s.GetHeadPos())
-		log.Printf("Game Area: %v", gameCFG.GetGameAreaAsRec())
-		return false
-	}
-	return true
+func generateRandomBerry(gameCFG *types.GameCFGType) pixel.Vec {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	x, y := gameCFG.GetGameAreaDims()
+	berryX := float64(r.Intn(int(x/gameCFG.GetGridSize())-1)) + (gameCFG.GetGameAreaAsRec().Min.X / gameCFG.GetGridSize())
+	berryY := float64(r.Intn(int(y/gameCFG.GetGridSize())-1)) + (gameCFG.GetGameAreaAsRec().Min.X / gameCFG.GetGridSize())
+	berry := pixel.V(berryX, berryY)
+	return gameCFG.GetGridMatrix().Project(berry)
 }

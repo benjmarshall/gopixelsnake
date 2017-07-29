@@ -46,7 +46,7 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	snake.length = 5
 	snake.speed = 1
 	x, y := gameCFG.GetGameAreaDims()
-	snake.headPos = pixel.V(float64(r.Intn(int(x/gameCFG.GetGridSize())-10))+5, float64(r.Intn(int(y/gameCFG.GetGridSize())-10))+5)
+	snake.headPos = pixel.V(float64(r.Intn(int(x/gameCFG.GetGridSize())-10))+5+(gameCFG.GetGameAreaAsRec().Min.X/gameCFG.GetGridSize()), float64(r.Intn(int(y/gameCFG.GetGridSize())-10))+5+(gameCFG.GetGameAreaAsRec().Min.Y/gameCFG.GetGridSize()))
 	switch i := r.Intn(3); {
 	case i == 0:
 		snake.currentDirection = UP
@@ -134,4 +134,51 @@ func (s *Type) Update(eaten bool, dir Direction) {
 	// log.Println(s.headPos)
 	// log.Println(s.pointsList)
 	// log.Println(s.tailPos)
+}
+
+// CheckSnakeOK is used to check the snake hasn't exicted the game area and has not hit itself
+func (s *Type) CheckSnakeOK(gameCFG *types.GameCFGType) bool {
+
+	// Check snack is inside the game boundary
+	if !gameCFG.GetGameAreaAsRec().Contains(s.GetHeadPos()) {
+		log.Println("Game Over")
+		log.Printf("Snake Head: %v", s.GetHeadPos())
+		log.Printf("Game Area: %v", gameCFG.GetGameAreaAsRec())
+		return false
+	}
+
+	// Check snake hasn't hit itself
+	// First collect all the turn positions of the snake (minus the head)
+	positions := []pixel.Vec{}
+	positions = append(positions, s.pointsList...)
+	positions = append(positions, s.tailPos)
+	// log.Println("Checking snake hit")
+	// log.Printf("Head Pos: %v", s.headPos)
+	// log.Printf("Tail Pos: %v", s.tailPos)
+	// Loop over the positions
+	for i := 0; i < len(positions)-1; i++ {
+		// Get the length of the line from one turn position to the next
+		l := positions[i].To(positions[i+1]).Len() + 1
+		// Now add all of the points along the line to a new slice
+		subPositions := []pixel.Vec{positions[i]}
+		if l > 2 {
+			for j := 1.0; j < l-2+1; j++ {
+				// We use linear interpolation here to get the points inbetween the end vectors
+				interpPoint := j / (l - 1)
+				interpVal := pixel.Lerp(positions[i], positions[i+1], interpPoint)
+				subPositions = append(subPositions, interpVal)
+				// log.Printf("Adding subpixel %f, interpolated using interp point %v, from length of %v", interpVal, interpPoint, l)
+			}
+		}
+		subPositions = append(subPositions, positions[i+1])
+		// Now loop over the slice of points along the line and see if we have a colision.
+		// log.Printf("Checking pixels: %v", subPositions)
+		for _, subPos := range subPositions {
+			if s.headPos == subPos {
+				return false
+			}
+		}
+	}
+
+	return true
 }
