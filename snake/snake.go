@@ -46,7 +46,7 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	snake.length = 5
 	snake.speed = 1
 	x, y := gameCFG.GetGameAreaDims()
-	snake.headPos = pixel.V(float64(r.Intn(int(x/gameCFG.GetGridSize()))), float64(r.Intn(int(y/gameCFG.GetGridSize()))))
+	snake.headPos = pixel.V(float64(r.Intn(int(x/gameCFG.GetGridSize())-10))+5, float64(r.Intn(int(y/gameCFG.GetGridSize())-10))+5)
 	switch i := r.Intn(3); {
 	case i == 0:
 		snake.currentDirection = UP
