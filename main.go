@@ -129,17 +129,6 @@ func drawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.
 	imd.Draw(win)
 }
 
-func drawSnakeLine(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, s *snake.Type) {
-	imd.Clear()
-	imd.Color = colornames.Purple
-	positions := []pixel.Vec{s.GetHeadPos()}
-	positions = append(positions, s.GetPositionPoints()...)
-	positions = append(positions, s.GetTailPos())
-	imd.Push(positions...)
-	imd.Line(gameCFG.GetGridSize())
-	imd.Draw(win)
-}
-
 func drawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, s *snake.Type) {
 	imd.Clear()
 	imd.Color = colornames.Purple
