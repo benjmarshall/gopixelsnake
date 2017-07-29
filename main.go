@@ -120,8 +120,8 @@ func drawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.
 	imd.Clear()
 	imd.Color = colornames.White
 	min, max := gameCFG.GetGameAreaAsVecs()
-	minVec := pixel.V((gameCFG.GetBorderWeight()*2)+1, (gameCFG.GetBorderWeight()*2)+1)
-	maxVec := pixel.V((gameCFG.GetBorderWeight()*2)+2, (gameCFG.GetBorderWeight()*2)+2)
+	minVec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
+	maxVec := pixel.V((gameCFG.GetGridSize()/2)+gameCFG.GetBorderWeight(), (gameCFG.GetGridSize()/2)+gameCFG.GetBorderWeight())
 	min = min.Sub(minVec)
 	max = max.Add(maxVec)
 	imd.Push(min, max)

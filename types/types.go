@@ -2,6 +2,7 @@ package types
 
 import (
 	"errors"
+	"log"
 	"math"
 
 	"github.com/faiface/pixel"
@@ -10,7 +11,6 @@ import (
 
 // GameCFGType is a struct used to define the configuration of the game
 type GameCFGType struct {
-	gameAreaOrig            pixel.Vec
 	gameAreaDims            gameAreaDimsType
 	gameArea                pixel.Rect
 	gameAreaBorderThickness float64
@@ -31,10 +31,18 @@ func NewGameCFG(xSize float64, ySize float64, borderWeight float64, gridSize flo
 	}
 	gameAreaMargin := (winCFG.Bounds.H() - ySize) / 2
 	gameCFG.gameAreaDims = gameAreaDimsType{x: xSize, y: ySize}
-	gameCFG.gameArea = pixel.R(gameAreaMargin, gameAreaMargin, gameAreaMargin+xSize+1, gameAreaMargin+ySize+1)
+	gameCFG.gameArea = pixel.R(gameAreaMargin, gameAreaMargin, gameAreaMargin+xSize, gameAreaMargin+ySize)
 	gameCFG.gameAreaBorderThickness = borderWeight
 	gameCFG.gameGridSize = gridSize
 	gameCFG.gameGridMatrix = pixel.IM.Scaled(pixel.ZV, gridSize).Moved(pixel.V(gridSize/2, gridSize/2))
+	// Debug
+	log.Println("__Game Config__")
+	log.Printf("Game Area Margin: %v", gameAreaMargin)
+	log.Printf("Area Dims: %v", gameCFG.gameAreaDims)
+	log.Printf("Area Rectangle: %v", gameCFG.gameArea)
+	log.Printf("Border Thichness: %v", gameCFG.gameAreaBorderThickness)
+	log.Printf("Grid Size: %v", gameCFG.gameGridSize)
+	log.Printf("Grid Matrix: %v", gameCFG.gameGridMatrix)
 	return *gameCFG
 }
 
