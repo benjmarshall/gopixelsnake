@@ -10,7 +10,9 @@ import (
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	"github.com/faiface/pixel/text"
 	"golang.org/x/image/colornames"
+	"golang.org/x/image/font/basicfont"
 )
 
 func main() {
@@ -24,6 +26,9 @@ func run() {
 		Bounds: pixel.R(0, 0, 1024, 768),
 		VSync:  true,
 	}
+
+	// Creat a text Atlas
+	basicAtlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
 	// Create the window
 	win, err := pixelgl.NewWindow(cfg)
@@ -46,10 +51,12 @@ func run() {
 
 	// Create some variables
 	var (
-		dir        snake.Direction
-		frames     = 0
-		second     = time.Tick(time.Second)
-		keyPressed = false
+		dir         snake.Direction
+		frames      = 0
+		second      = time.Tick(time.Second)
+		keyPressed  = false
+		gameRunning = true
+		gameOver    = false
 	)
 
 	// Draw the initial frames	// Clear the frame
@@ -67,41 +74,60 @@ func run() {
 		// Clear the screen
 		win.Clear(colornames.Darkcyan)
 
-		// Catch user input
-		if keyPressed == false {
-			if win.JustPressed(pixelgl.KeyUp) {
-				dir = snake.UP
-				keyPressed = true
-			} else if win.JustPressed(pixelgl.KeyDown) {
-				dir = snake.DOWN
-				keyPressed = true
-			} else if win.JustPressed(pixelgl.KeyLeft) {
-				dir = snake.LEFT
-				keyPressed = true
-			} else if win.JustPressed(pixelgl.KeyRight) {
-				dir = snake.RIGHT
-				keyPressed = true
+		// Do game logic only if the game is actually running!
+		if gameRunning {
+
+			// Catch user input
+			if keyPressed == false {
+				if win.JustPressed(pixelgl.KeyUp) {
+					dir = snake.UP
+					keyPressed = true
+				} else if win.JustPressed(pixelgl.KeyDown) {
+					dir = snake.DOWN
+					keyPressed = true
+				} else if win.JustPressed(pixelgl.KeyLeft) {
+					dir = snake.LEFT
+					keyPressed = true
+				} else if win.JustPressed(pixelgl.KeyRight) {
+					dir = snake.RIGHT
+					keyPressed = true
+				}
+			}
+
+			// Update the snake
+			select {
+			case <-snakeTicker.C:
+				// Update the snake
+				s.Update(false, dir)
+				// Reset the user inputs
+				dir = snake.NOCHANGE
+				keyPressed = false
+				// Debug
+				log.Println(s.GetHeadPos())
+				log.Println(s.GetPositionPoints())
+				log.Println(s.GetTailPos())
+				if !checkSnakeOK(&s, &gameCFG) {
+					gameOver = true
+					gameRunning = false
+				}
+			default:
+			}
+
+		}
+
+		// Always draw the game
+		drawGameBackground(win, imdArea, &gameCFG)
+		drawSnakeRect(win, imdGame, &gameCFG, &s)
+
+		// Check if the game is over
+		if gameOver {
+			drawGameOver(win, basicAtlas, &gameCFG)
+			if win.JustPressed(pixelgl.KeyEnter) {
+				win.SetClosed(true)
 			}
 		}
 
-		// Update the snake
-		select {
-		case <-snakeTicker.C:
-			// Update the snake
-			s.Update(false, dir)
-			// Reset the user inputs
-			dir = snake.NOCHANGE
-			keyPressed = false
-			// Debug
-			log.Println(s.GetHeadPos())
-			log.Println(s.GetPositionPoints())
-			log.Println(s.GetTailPos())
-		default:
-		}
-
-		// Draw the sframe
-		drawGameBackground(win, imdArea, &gameCFG)
-		drawSnakeRect(win, imdGame, &gameCFG, &s)
+		// Always update the window
 		win.Update()
 		frames++
 
@@ -121,9 +147,9 @@ func drawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.
 	imd.Color = colornames.White
 	min, max := gameCFG.GetGameAreaAsVecs()
 	minVec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
-	maxVec := pixel.V((gameCFG.GetGridSize()/2)+gameCFG.GetBorderWeight(), (gameCFG.GetGridSize()/2)+gameCFG.GetBorderWeight())
+	maxVec := pixel.V((gameCFG.GetGridSize()/2)-gameCFG.GetBorderWeight(), (gameCFG.GetGridSize()/2)-gameCFG.GetBorderWeight())
 	min = min.Sub(minVec)
-	max = max.Add(maxVec)
+	max = max.Sub(maxVec)
 	imd.Push(min, max)
 	imd.Rectangle(2)
 	imd.Draw(win)
@@ -143,4 +169,29 @@ func drawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameC
 	}
 	imd.Rectangle(0)
 	imd.Draw(win)
+}
+
+func drawGameOver(win *pixelgl.Window, atlas *text.Atlas, gameCFG *types.GameCFGType) {
+	gameoverMessage := text.New(gameCFG.GetGameAreaAsRec().Center(), atlas)
+	lines := []string{
+		"Game Over!",
+		"Press Enter to exit...",
+	}
+	gameoverMessage.Color = colornames.Black
+	for _, line := range lines {
+		gameoverMessage.Dot.X -= gameoverMessage.BoundsOf(line).W() / 2
+		fmt.Fprintln(gameoverMessage, line)
+	}
+	gameoverMessage.Orig.Add(pixel.V(0, gameoverMessage.BoundsOf(lines[0]).H()))
+	gameoverMessage.Draw(win, pixel.IM.Scaled(gameoverMessage.Orig, 4))
+}
+
+func checkSnakeOK(s *snake.Type, gameCFG *types.GameCFGType) bool {
+	if !gameCFG.GetGameAreaAsRec().Contains(s.GetHeadPos()) {
+		log.Println("Game Over")
+		log.Printf("Snake Head: %v", s.GetHeadPos())
+		log.Printf("Game Area: %v", gameCFG.GetGameAreaAsRec())
+		return false
+	}
+	return true
 }

@@ -66,6 +66,11 @@ func (cfg *GameCFGType) GetGameAreaAsVecs() (min pixel.Vec, max pixel.Vec) {
 	return cfg.gameArea.Min, cfg.gameArea.Max
 }
 
+// GetGameAreaAsRec returns the rectangle representing the game area
+func (cfg *GameCFGType) GetGameAreaAsRec() pixel.Rect {
+	return cfg.gameArea
+}
+
 // GetBorderWeight returns the weight in pixels of the border of the game area
 func (cfg *GameCFGType) GetBorderWeight() float64 {
 	return cfg.gameAreaBorderThickness
