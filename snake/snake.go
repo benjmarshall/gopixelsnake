@@ -69,19 +69,19 @@ func (s *Type) dir() pixel.Vec {
 
 // GetHeadPos returns the position of the head of the snake in the game area coordinate plane
 func (s *Type) GetHeadPos() pixel.Vec {
-	return roundVec(s.gameCFG.GetGridMatrix().Project(s.headPos), 1)
+	return s.gameCFG.GetGridMatrix().Project(s.headPos)
 }
 
 // GetTailPos returns the position of the tail of the snake in the game area coordinate plane
 func (s *Type) GetTailPos() pixel.Vec {
-	return roundVec(s.gameCFG.GetGridMatrix().Project(s.tailPos), 1)
+	return s.gameCFG.GetGridMatrix().Project(s.tailPos)
 }
 
 // GetPositionPoints returns the list of the snakes previous turn positions in the game area coordinate plane
 func (s *Type) GetPositionPoints() []pixel.Vec {
 	positions := []pixel.Vec{}
 	for _, pos := range s.pointsList {
-		positions = append(positions, roundVec(s.gameCFG.GetGridMatrix().Project(pos), 1))
+		positions = append(positions, s.gameCFG.GetGridMatrix().Project(pos))
 	}
 	return positions
 }
@@ -134,15 +134,4 @@ func (s *Type) Update(eaten bool, dir Direction) {
 	// log.Println(s.headPos)
 	// log.Println(s.pointsList)
 	// log.Println(s.tailPos)
-}
-
-func round(x, unit float64) float64 {
-	if x > 0 {
-		return float64(int64(x/unit+0.5)) * unit
-	}
-	return float64(int64(x/unit-0.5)) * unit
-}
-
-func roundVec(v pixel.Vec, unit float64) pixel.Vec {
-	return pixel.V(round(v.X, unit), round(v.Y, unit))
 }
