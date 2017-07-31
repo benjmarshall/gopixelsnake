@@ -72,6 +72,8 @@ func run() {
 	drawSnakeRect(win, imdGame, &gameCFG, &s)
 	drawBerry(win, imdBerry, &gameCFG, berry)
 	textStruct.DrawTitleText(win)
+	textStruct.DrawScoreText(win, score)
+	textStruct.DrawControlsText(win)
 	win.Update()
 
 	// Keep going till the window is closed
@@ -136,6 +138,7 @@ func run() {
 		drawBerry(win, imdBerry, &gameCFG, berry)
 		textStruct.DrawTitleText(win)
 		textStruct.DrawScoreText(win, score)
+		textStruct.DrawControlsText(win)
 
 		// Check if the game is over
 		if gameOver {
