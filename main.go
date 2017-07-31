@@ -57,13 +57,13 @@ func run() {
 
 	// Create some variables
 	var (
-		dir         snake.Direction
-		frames      = 0
-		second      = time.Tick(time.Second)
-		keyPressed  = false
-		gameRunning = true
-		gameOver    = false
-		eaten       = false
+		frames         = 0
+		second         = time.Tick(time.Second)
+		gameRunning    = true
+		gameOver       = false
+		eaten          = false
+		inputKeyBuffer = []snake.Direction{}
+		dir            snake.Direction
 	)
 
 	// Draw the initial frames	// Clear the frame
@@ -83,30 +83,27 @@ func run() {
 		if gameRunning {
 
 			// Catch user input
-			if keyPressed == false {
-				if win.JustPressed(pixelgl.KeyUp) {
-					dir = snake.UP
-					keyPressed = true
-				} else if win.JustPressed(pixelgl.KeyDown) {
-					dir = snake.DOWN
-					keyPressed = true
-				} else if win.JustPressed(pixelgl.KeyLeft) {
-					dir = snake.LEFT
-					keyPressed = true
-				} else if win.JustPressed(pixelgl.KeyRight) {
-					dir = snake.RIGHT
-					keyPressed = true
-				}
+			if win.JustPressed(pixelgl.KeyUp) {
+				inputKeyBuffer = append(inputKeyBuffer, snake.UP)
+			} else if win.JustPressed(pixelgl.KeyDown) {
+				inputKeyBuffer = append(inputKeyBuffer, snake.DOWN)
+			} else if win.JustPressed(pixelgl.KeyLeft) {
+				inputKeyBuffer = append(inputKeyBuffer, snake.LEFT)
+			} else if win.JustPressed(pixelgl.KeyRight) {
+				inputKeyBuffer = append(inputKeyBuffer, snake.RIGHT)
 			}
 
 			// Update the snake
 			select {
 			case <-s.GetTicker().C:
 				// Update the snake
+				if len(inputKeyBuffer) == 0 {
+					dir = snake.NOCHANGE
+				} else {
+					dir = inputKeyBuffer[0]
+					inputKeyBuffer = inputKeyBuffer[1:len(inputKeyBuffer)]
+				}
 				s.Update(eaten, dir)
-				// Reset the user inputs
-				dir = snake.NOCHANGE
-				keyPressed = false
 				// Debug
 				// log.Println(s.GetHeadPos())
 				// log.Println(s.GetPositionPoints())
