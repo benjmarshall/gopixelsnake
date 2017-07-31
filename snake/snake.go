@@ -45,7 +45,7 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	snake := new(Type)
 	snake.gameCFG = &gameCFG
 	snake.length = 5
-	snake.speed = 1.5
+	snake.speed = 2
 	x, y := gameCFG.GetGameAreaDims()
 	snakeStartingMargin := 10
 	startingDimX := int(x/gameCFG.GetGridSize()) - snakeStartingMargin
@@ -105,7 +105,7 @@ func (s *Type) GetTicker() time.Ticker {
 
 // IncreaseSpeed increase the speed of the snake
 func (s *Type) IncreaseSpeed() {
-	s.speed *= 1.5
+	s.speed++
 	s.ticker.Stop()
 	s.ticker = *time.NewTicker(time.Second / time.Duration(s.speed))
 }
