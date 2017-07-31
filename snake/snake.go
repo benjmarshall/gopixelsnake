@@ -18,6 +18,7 @@ type Type struct {
 	currentDirection Direction
 	pointsList       []pixel.Vec
 	gameCFG          *types.GameCFGType
+	ticker           time.Ticker
 }
 
 // Direction is used to define the direction the snake is heading
@@ -44,7 +45,7 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	snake := new(Type)
 	snake.gameCFG = &gameCFG
 	snake.length = 5
-	snake.speed = 1
+	snake.speed = 1.5
 	x, y := gameCFG.GetGameAreaDims()
 	snakeStartingMargin := 10
 	startingDimX := int(x/gameCFG.GetGridSize()) - snakeStartingMargin
@@ -52,9 +53,7 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	startX := r.Intn(startingDimX) + (snakeStartingMargin / 2)
 	startY := r.Intn(startingDimY) + (snakeStartingMargin / 2)
 	snake.headPos = pixel.V(float64(startX), float64(startY))
-	log.Printf("starting dims: %v, %v", startingDimX, startingDimY)
-	log.Printf("startx, starty: %v, %v", startX, startY)
-	log.Printf("head pos: %v", snake.headPos)
+	snake.ticker = *time.NewTicker(time.Second / time.Duration(snake.speed))
 	switch i := r.Intn(3); {
 	case i == 0:
 		snake.currentDirection = UP
@@ -99,11 +98,20 @@ func (s *Type) GetSpeed() float64 {
 	return s.speed
 }
 
-// Update is used to UPdate the status of snake position and speed.
+// GetTicker returns the snake speed ticker
+func (s *Type) GetTicker() time.Ticker {
+	return s.ticker
+}
+
+// Update is used to Update the status of snake position and speed.
 func (s *Type) Update(eaten bool, dir Direction) {
-	// If the snake has eaten let's up the speed
+	// If the snake has eaten let's up the speed and increase the length
 	if eaten {
-		s.speed *= 1.1
+		s.speed *= 1.5
+		s.ticker.Stop()
+		s.ticker = *time.NewTicker(time.Second / time.Duration(s.speed))
+		log.Printf("Speed Up: %v", s.speed)
+		s.length++
 	}
 
 	if dir != NOCHANGE {
@@ -194,9 +202,6 @@ func (s *Type) CheckSnakeOK(gameCFG *types.GameCFGType) bool {
 // CheckIfSnakeHasEaten is used to check the snake has easten the berry
 func (s *Type) CheckIfSnakeHasEaten(gameCFG *types.GameCFGType, berry pixel.Vec) bool {
 	berryTransformed := gameCFG.GetGridMatrix().Unproject(berry)
-	log.Println("Checking berry eaten:")
-	log.Printf("Head Pos: %v", s.headPos)
-	log.Printf("Bery Pos: %v", berryTransformed)
 	if s.headPos == berryTransformed {
 		return true
 	}

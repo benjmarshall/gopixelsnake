@@ -73,9 +73,6 @@ func run() {
 	drawBerry(win, imdBerry, &gameCFG, berry)
 	win.Update()
 
-	// Start the snake timer
-	snakeTicker := time.NewTicker(time.Second * time.Duration(s.GetSpeed()))
-
 	// Keep going till the window is closed
 	for !win.Closed() {
 
@@ -104,7 +101,7 @@ func run() {
 
 			// Update the snake
 			select {
-			case <-snakeTicker.C:
+			case <-s.GetTicker().C:
 				// Update the snake
 				s.Update(eaten, dir)
 				// Reset the user inputs
