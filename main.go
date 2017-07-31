@@ -6,14 +6,13 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/benjmarshall/gosnake/gametext"
 	"github.com/benjmarshall/gosnake/snake"
 	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
-	"github.com/faiface/pixel/text"
 	"golang.org/x/image/colornames"
-	"golang.org/x/image/font/basicfont"
 )
 
 func main() {
@@ -28,9 +27,6 @@ func run() {
 		VSync:  true,
 	}
 
-	// Creat a text Atlas
-	basicAtlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
-
 	// Create the window
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
@@ -39,6 +35,9 @@ func run() {
 
 	// Setup Game Configuration
 	gameCFG := types.NewGameCFG(700, 700, 2, 10, cfg)
+
+	// Setup text structure
+	textStruct := gametext.NewGameText(win, gameCFG)
 
 	// Initialize a new snake
 	s := snake.NewSnake(gameCFG)
@@ -71,6 +70,7 @@ func run() {
 	drawGameBackground(win, imdArea, &gameCFG)
 	drawSnakeRect(win, imdGame, &gameCFG, &s)
 	drawBerry(win, imdBerry, &gameCFG, berry)
+	textStruct.DrawTitleText(win)
 	win.Update()
 
 	// Keep going till the window is closed
@@ -128,10 +128,11 @@ func run() {
 		drawGameBackground(win, imdArea, &gameCFG)
 		drawSnakeRect(win, imdGame, &gameCFG, &s)
 		drawBerry(win, imdBerry, &gameCFG, berry)
+		textStruct.DrawTitleText(win)
 
 		// Check if the game is over
 		if gameOver {
-			drawGameOver(win, basicAtlas, &gameCFG)
+			textStruct.DrawGameOverText(win)
 			if win.JustPressed(pixelgl.KeyEnter) {
 				win.SetClosed(true)
 			}
@@ -190,22 +191,6 @@ func drawBerry(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGTy
 	imd.Push(berry)
 	imd.Circle(gameCFG.GetGridSize()/2, 0)
 	imd.Draw(win)
-}
-
-func drawGameOver(win *pixelgl.Window, atlas *text.Atlas, gameCFG *types.GameCFGType) {
-	textOrig := gameCFG.GetWindowMatrix().Project(gameCFG.GetGameAreaAsRec().Center())
-	gameoverMessage := text.New(textOrig, atlas)
-	lines := []string{
-		"Game Over!",
-		"Press Enter to exit...",
-	}
-	gameoverMessage.Color = colornames.Black
-	for _, line := range lines {
-		gameoverMessage.Dot.X -= gameoverMessage.BoundsOf(line).W() / 2
-		fmt.Fprintln(gameoverMessage, line)
-	}
-	gameoverMessage.Orig.Add(pixel.V(0, gameoverMessage.BoundsOf(lines[0]).H()))
-	gameoverMessage.Draw(win, pixel.IM.Scaled(gameoverMessage.Orig, 4))
 }
 
 func generateRandomBerry(gameCFG *types.GameCFGType) pixel.Vec {
