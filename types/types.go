@@ -16,6 +16,7 @@ type GameCFGType struct {
 	gameAreaBorderThickness float64
 	gameGridSize            float64
 	gameGridMatrix          pixel.Matrix
+	gameWindowMatrix        pixel.Matrix
 }
 
 type gameAreaDimsType struct {
@@ -31,10 +32,11 @@ func NewGameCFG(xSize float64, ySize float64, borderWeight float64, gridSize flo
 	}
 	gameAreaMargin := (winCFG.Bounds.H() - ySize) / 2
 	gameCFG.gameAreaDims = gameAreaDimsType{x: xSize, y: ySize}
-	gameCFG.gameArea = pixel.R(gameAreaMargin, gameAreaMargin, gameAreaMargin+xSize, gameAreaMargin+ySize)
+	gameCFG.gameArea = pixel.R(0, 0, xSize, ySize)
 	gameCFG.gameAreaBorderThickness = borderWeight
 	gameCFG.gameGridSize = gridSize
 	gameCFG.gameGridMatrix = pixel.IM.Scaled(pixel.ZV, gridSize).Moved(pixel.V(gridSize/2, gridSize/2))
+	gameCFG.gameWindowMatrix = pixel.IM.Moved(pixel.V(gameAreaMargin, gameAreaMargin))
 	// Debug
 	log.Println("__Game Config__")
 	log.Printf("Game Area Margin: %v", gameAreaMargin)
@@ -43,12 +45,18 @@ func NewGameCFG(xSize float64, ySize float64, borderWeight float64, gridSize flo
 	log.Printf("Border Thichness: %v", gameCFG.gameAreaBorderThickness)
 	log.Printf("Grid Size: %v", gameCFG.gameGridSize)
 	log.Printf("Grid Matrix: %v", gameCFG.gameGridMatrix)
+	log.Printf("Window Matrix: %v", gameCFG.gameWindowMatrix)
 	return *gameCFG
 }
 
-// GetGridMatrix returns the matrix for the game grid
+// GetGridMatrix returns the matrix for the game grid which is used to translate the snake coordinates onto the game area.
 func (cfg *GameCFGType) GetGridMatrix() pixel.Matrix {
 	return cfg.gameGridMatrix
+}
+
+// GetWindowMatrix returns the matrix for the game area which is used to translate the game area coordinates onto the window.
+func (cfg *GameCFGType) GetWindowMatrix() pixel.Matrix {
+	return cfg.gameWindowMatrix
 }
 
 // GetGridSize returns the pixel size of the game grid
@@ -61,12 +69,12 @@ func (cfg *GameCFGType) GetGameAreaDims() (x float64, y float64) {
 	return cfg.gameAreaDims.x, cfg.gameAreaDims.y
 }
 
-// GetGameAreaAsVecs returns the vectors representing the game area
+// GetGameAreaAsVecs returns the vectors representing the game area in it's native coordinates
 func (cfg *GameCFGType) GetGameAreaAsVecs() (min pixel.Vec, max pixel.Vec) {
 	return cfg.gameArea.Min, cfg.gameArea.Max
 }
 
-// GetGameAreaAsRec returns the rectangle representing the game area
+// GetGameAreaAsRec returns the rectangle representing the game area in it's native coordinates
 func (cfg *GameCFGType) GetGameAreaAsRec() pixel.Rect {
 	return cfg.gameArea
 }

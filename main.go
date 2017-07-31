@@ -45,7 +45,6 @@ func run() {
 
 	// Generate a berry
 	berry := generateRandomBerry(&gameCFG)
-	log.Printf("Berry: %v", berry)
 
 	// Create the Game Background Shape
 	imdArea := imdraw.New(nil)
@@ -64,6 +63,7 @@ func run() {
 		keyPressed  = false
 		gameRunning = true
 		gameOver    = false
+		eaten       = false
 	)
 
 	// Draw the initial frames	// Clear the frame
@@ -106,7 +106,7 @@ func run() {
 			select {
 			case <-snakeTicker.C:
 				// Update the snake
-				s.Update(false, dir)
+				s.Update(eaten, dir)
 				// Reset the user inputs
 				dir = snake.NOCHANGE
 				keyPressed = false
@@ -114,9 +114,15 @@ func run() {
 				// log.Println(s.GetHeadPos())
 				// log.Println(s.GetPositionPoints())
 				// log.Println(s.GetTailPos())
+				// Check the snake is still in bounds
 				if !s.CheckSnakeOK(&gameCFG) {
 					gameOver = true
 					gameRunning = false
+				}
+				// Check if the snake has eaten
+				eaten = s.CheckIfSnakeHasEaten(&gameCFG, berry)
+				if eaten {
+					berry = generateRandomBerry(&gameCFG)
 				}
 			default:
 			}
@@ -155,10 +161,11 @@ func drawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.
 	imd.Clear()
 	imd.Color = colornames.White
 	min, max := gameCFG.GetGameAreaAsVecs()
-	minVec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
-	maxVec := pixel.V((gameCFG.GetGridSize()/2)-gameCFG.GetBorderWeight(), (gameCFG.GetGridSize()/2)-gameCFG.GetBorderWeight())
-	min = min.Sub(minVec)
-	max = max.Sub(maxVec)
+	min = gameCFG.GetWindowMatrix().Project(min)
+	max = gameCFG.GetWindowMatrix().Project(max)
+	vec := pixel.V(gameCFG.GetBorderWeight()/2, gameCFG.GetBorderWeight()/2)
+	min = min.Sub(vec)
+	max = max.Add(vec)
 	imd.Push(min, max)
 	imd.Rectangle(2)
 	imd.Draw(win)
@@ -171,9 +178,10 @@ func drawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameC
 	positions = append(positions, s.GetPositionPoints()...)
 	positions = append(positions, s.GetTailPos())
 	for _, pos := range positions {
+		m := gameCFG.GetWindowMatrix()
 		vec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
-		min := pos.Sub(vec)
-		max := pos.Add(vec)
+		min := m.Project(pos).Sub(vec)
+		max := m.Project(pos).Add(vec)
 		imd.Push(min, max)
 	}
 	imd.Rectangle(0)
@@ -181,18 +189,17 @@ func drawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameC
 }
 
 func drawBerry(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, berry pixel.Vec) {
+	berry = gameCFG.GetWindowMatrix().Project(berry)
 	imd.Clear()
 	imd.Color = colornames.Orangered
-	vec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
-	min := berry.Sub(vec)
-	max := berry.Add(vec)
-	imd.Push(min, max)
-	imd.Rectangle(0)
+	imd.Push(berry)
+	imd.Circle(gameCFG.GetGridSize()/2, 0)
 	imd.Draw(win)
 }
 
 func drawGameOver(win *pixelgl.Window, atlas *text.Atlas, gameCFG *types.GameCFGType) {
-	gameoverMessage := text.New(gameCFG.GetGameAreaAsRec().Center(), atlas)
+	textOrig := gameCFG.GetWindowMatrix().Project(gameCFG.GetGameAreaAsRec().Center())
+	gameoverMessage := text.New(textOrig, atlas)
 	lines := []string{
 		"Game Over!",
 		"Press Enter to exit...",
@@ -209,8 +216,9 @@ func drawGameOver(win *pixelgl.Window, atlas *text.Atlas, gameCFG *types.GameCFG
 func generateRandomBerry(gameCFG *types.GameCFGType) pixel.Vec {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	x, y := gameCFG.GetGameAreaDims()
-	berryX := float64(r.Intn(int(x/gameCFG.GetGridSize())-1)) + (gameCFG.GetGameAreaAsRec().Min.X / gameCFG.GetGridSize())
-	berryY := float64(r.Intn(int(y/gameCFG.GetGridSize())-1)) + (gameCFG.GetGameAreaAsRec().Min.X / gameCFG.GetGridSize())
+	berryX := float64(r.Intn(int(x/gameCFG.GetGridSize()) - 1))
+	berryY := float64(r.Intn(int(y/gameCFG.GetGridSize()) - 1))
 	berry := pixel.V(berryX, berryY)
+	log.Printf("Berry: %v", berry)
 	return gameCFG.GetGridMatrix().Project(berry)
 }

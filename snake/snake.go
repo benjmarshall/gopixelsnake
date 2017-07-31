@@ -46,7 +46,15 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	snake.length = 5
 	snake.speed = 1
 	x, y := gameCFG.GetGameAreaDims()
-	snake.headPos = pixel.V(float64(r.Intn(int(x/gameCFG.GetGridSize())-10))+5+(gameCFG.GetGameAreaAsRec().Min.X/gameCFG.GetGridSize()), float64(r.Intn(int(y/gameCFG.GetGridSize())-10))+5+(gameCFG.GetGameAreaAsRec().Min.Y/gameCFG.GetGridSize()))
+	snakeStartingMargin := 10
+	startingDimX := int(x/gameCFG.GetGridSize()) - snakeStartingMargin
+	startingDimY := int(y/gameCFG.GetGridSize()) - snakeStartingMargin
+	startX := r.Intn(startingDimX) + (snakeStartingMargin / 2)
+	startY := r.Intn(startingDimY) + (snakeStartingMargin / 2)
+	snake.headPos = pixel.V(float64(startX), float64(startY))
+	log.Printf("starting dims: %v, %v", startingDimX, startingDimY)
+	log.Printf("startx, starty: %v, %v", startX, startY)
+	log.Printf("head pos: %v", snake.headPos)
 	switch i := r.Intn(3); {
 	case i == 0:
 		snake.currentDirection = UP
@@ -139,7 +147,7 @@ func (s *Type) Update(eaten bool, dir Direction) {
 // CheckSnakeOK is used to check the snake hasn't exicted the game area and has not hit itself
 func (s *Type) CheckSnakeOK(gameCFG *types.GameCFGType) bool {
 
-	// Check snack is inside the game boundary
+	// Check snake is inside the game boundary
 	if !gameCFG.GetGameAreaAsRec().Contains(s.GetHeadPos()) {
 		log.Println("Game Over")
 		log.Printf("Snake Head: %v", s.GetHeadPos())
@@ -181,4 +189,16 @@ func (s *Type) CheckSnakeOK(gameCFG *types.GameCFGType) bool {
 	}
 
 	return true
+}
+
+// CheckIfSnakeHasEaten is used to check the snake has easten the berry
+func (s *Type) CheckIfSnakeHasEaten(gameCFG *types.GameCFGType, berry pixel.Vec) bool {
+	berryTransformed := gameCFG.GetGridMatrix().Unproject(berry)
+	log.Println("Checking berry eaten:")
+	log.Printf("Head Pos: %v", s.headPos)
+	log.Printf("Bery Pos: %v", berryTransformed)
+	if s.headPos == berryTransformed {
+		return true
+	}
+	return false
 }
