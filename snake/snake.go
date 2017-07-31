@@ -119,10 +119,16 @@ func (s *Type) Update(eaten bool, dir Direction) {
 
 	if dir != NOCHANGE {
 		//log.Println("Changing direction")
-		// Update the direction
-		s.currentDirection = dir
-		// Push the current head position into the points stack
-		s.pointsList = append([]pixel.Vec{s.headPos}, s.pointsList...)
+		// Ignore a request to change to the opposite direction
+		if !(dir == UP && s.currentDirection == DOWN) &&
+			!(dir == DOWN && s.currentDirection == UP) &&
+			!(dir == LEFT && s.currentDirection == RIGHT) &&
+			!(dir == RIGHT && s.currentDirection == LEFT) {
+			// Update the direction
+			s.currentDirection = dir
+			// Push the current head position into the points stack
+			s.pointsList = append([]pixel.Vec{s.headPos}, s.pointsList...)
+		}
 	}
 	if len(s.pointsList) > 0 {
 		if s.tailPos == s.pointsList[len(s.pointsList)-1] {
