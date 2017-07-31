@@ -82,6 +82,30 @@ func run() {
 		// Clear the screen
 		win.Clear(colornames.Darkcyan)
 
+		if !gameRunning && !gameOver {
+			// Game is not running so wait for user to do something!
+			// Catch user input
+			startDir := snake.NOCHANGE
+			if win.JustPressed(pixelgl.KeyUp) {
+				startDir = s.StartOfGame(snake.UP)
+				gameRunning = true
+			} else if win.JustPressed(pixelgl.KeyDown) {
+				startDir = s.StartOfGame(snake.DOWN)
+				gameRunning = true
+			} else if win.JustPressed(pixelgl.KeyLeft) {
+				startDir = s.StartOfGame(snake.LEFT)
+				gameRunning = true
+			} else if win.JustPressed(pixelgl.KeyRight) {
+				startDir = s.StartOfGame(snake.RIGHT)
+				gameRunning = true
+			} else if win.JustPressed(pixelgl.KeyX) {
+				win.SetClosed(true)
+			}
+			if startDir != snake.NOCHANGE {
+				inputKeyBuffer = append(inputKeyBuffer, startDir)
+			}
+		}
+
 		// Do game logic only if the game is actually running!
 		if gameRunning {
 
@@ -98,7 +122,7 @@ func run() {
 
 			// Update the snake
 			select {
-			case <-s.GetTicker().C:
+			case <-s.GetTicker():
 				// Update the snake
 				if len(inputKeyBuffer) == 0 {
 					dir = snake.NOCHANGE
@@ -132,20 +156,12 @@ func run() {
 
 		} else if gameOver {
 			// Game has ended wait for user to continue
-			textStruct.DrawGameOverText(win)
 			if win.JustPressed(pixelgl.KeyEnter) {
 				// reset the board
 				gameOver = false
 				score = 0
 				berry = generateRandomBerry(&gameCFG)
 				s = snake.NewSnake(gameCFG)
-			}
-		} else {
-			// Game is not running so wait for user to do something!
-			if win.JustPressed(pixelgl.KeyEnter) {
-				gameRunning = true
-			} else if win.JustPressed(pixelgl.KeyX) {
-				win.SetClosed(true)
 			}
 		}
 
@@ -156,6 +172,12 @@ func run() {
 		textStruct.DrawTitleText(win)
 		textStruct.DrawScoreText(win, score)
 		textStruct.DrawControlsText(win)
+		if !gameRunning && !gameOver {
+			// Show the start game message
+			textStruct.DrawStartGameText(win)
+		} else if gameOver {
+			textStruct.DrawGameOverText(win)
+		}
 
 		// Always update the window
 		win.Update()

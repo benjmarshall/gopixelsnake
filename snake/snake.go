@@ -19,6 +19,8 @@ type Type struct {
 	pointsList       []pixel.Vec
 	gameCFG          *types.GameCFGType
 	ticker           time.Ticker
+	tickerChannel    chan time.Time
+	startChannel     chan time.Time
 }
 
 // Direction is used to define the direction the snake is heading
@@ -53,7 +55,6 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 	startX := r.Intn(startingDimX) + (snakeStartingMargin / 2)
 	startY := r.Intn(startingDimY) + (snakeStartingMargin / 2)
 	snake.headPos = pixel.V(float64(startX), float64(startY))
-	snake.ticker = *time.NewTicker(time.Second / time.Duration(snake.speed))
 	switch i := r.Intn(3); {
 	case i == 0:
 		snake.currentDirection = UP
@@ -67,6 +68,8 @@ func NewSnake(gameCFG types.GameCFGType) Type {
 		snake.currentDirection = UP
 	}
 	snake.tailPos = snake.headPos.Sub(snake.dir().Scaled(snake.length - 1))
+	log.Println("__Snake Config__")
+	log.Printf("Direction: %v", snake.currentDirection)
 	return *snake
 }
 
@@ -99,15 +102,20 @@ func (s *Type) GetSpeed() float64 {
 }
 
 // GetTicker returns the snake speed ticker
-func (s *Type) GetTicker() time.Ticker {
-	return s.ticker
+func (s *Type) GetTicker() <-chan time.Time {
+	return s.tickerChannel
 }
 
 // IncreaseSpeed increase the speed of the snake
 func (s *Type) IncreaseSpeed() {
 	s.speed++
+	// Shut down the old ticker and channel multiplex
+	close(s.startChannel)
 	s.ticker.Stop()
+	// Start up the new ones
+	s.startChannel = make(chan time.Time)
 	s.ticker = *time.NewTicker(time.Second / time.Duration(s.speed))
+	go tickerMultiplex(s.tickerChannel, s.ticker.C, s.startChannel)
 }
 
 // Update is used to Update the status of snake position and speed.
@@ -216,4 +224,51 @@ func (s *Type) CheckIfSnakeHasEaten(gameCFG *types.GameCFGType, berry pixel.Vec)
 		return true
 	}
 	return false
+}
+
+// StartOfGame is used to allow the starting of the game with the arrow keys to choose
+// the initial direction of the snake.
+func (s *Type) StartOfGame(dir Direction) Direction {
+	// Start the snake ticker now so it is synced with the users key press
+	// We use a goroutine running a channel multiplex here so we can
+	// send an immediate trigger to start the first frame
+	s.tickerChannel = make(chan time.Time)
+	s.startChannel = make(chan time.Time)
+	s.ticker = *time.NewTicker(time.Second / time.Duration(s.speed))
+	go tickerMultiplex(s.tickerChannel, s.ticker.C, s.startChannel)
+	s.startChannel <- time.Now()
+
+	if dir == s.currentDirection {
+		// User has started in the direction we are facing, all good.
+		return NOCHANGE
+	} else if (dir == UP && s.currentDirection == DOWN) ||
+		(dir == DOWN && s.currentDirection == UP) ||
+		(dir == LEFT && s.currentDirection == RIGHT) ||
+		(dir == RIGHT && s.currentDirection == LEFT) {
+		// User has started in opposite direction, switch head and tail.
+		tempPos := s.headPos
+		s.headPos = s.tailPos
+		s.tailPos = tempPos
+		s.currentDirection = dir
+		return NOCHANGE
+	} else {
+		// Must be a left or right turn, call standard update function.
+		return dir
+	}
+}
+
+// tickerMultiplex is used to allow us to send an immdidiate pulse into the 'ticker' channel upon creation
+func tickerMultiplex(out chan<- time.Time, tickerIn <-chan time.Time, startIn <-chan time.Time) {
+	for true {
+		select {
+		case t := <-tickerIn:
+			out <- t
+		case t, ok := <-startIn:
+			if !ok {
+				return
+			}
+			out <- t
+		default:
+		}
+	}
 }

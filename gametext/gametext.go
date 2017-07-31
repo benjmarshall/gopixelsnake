@@ -14,11 +14,12 @@ import (
 
 // Type holds the various text object for the game
 type Type struct {
-	title    snaketext
-	score    snaketext
-	controls snaketext
-	gameover snaketext
-	atlas    *text.Atlas
+	title     snaketext
+	score     snaketext
+	controls  snaketext
+	gameover  snaketext
+	startgame snaketext
+	atlas     *text.Atlas
 }
 
 // snaketext is a wrapper around pixel.text which also holds scale information for drawing
@@ -65,6 +66,20 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	t.gameover.text.Orig.Add(pixel.V(0, t.gameover.text.BoundsOf(lines[0]).H()))
 	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 3)
 
+	// Create Start Game Text
+	t.startgame.text = text.New(t.gameover.text.Orig, t.atlas)
+	lines = []string{
+		"Hit an arrow key",
+		"to start a new game!",
+	}
+	t.startgame.text.Color = colornames.Black
+	for _, line := range lines {
+		t.startgame.text.Dot.X -= t.startgame.text.BoundsOf(line).W() / 2
+		fmt.Fprintln(t.startgame.text, line)
+	}
+	t.startgame.text.Orig.Add(pixel.V(0, t.startgame.text.BoundsOf(lines[0]).H()))
+	t.startgame.drawScale = pixel.IM.Scaled(t.startgame.text.Orig, 3)
+
 	// Create Score Text
 	textOrigY = win.Bounds().H() * 0.8
 	textOrig = pixel.V(textOrigX, textOrigY)
@@ -76,14 +91,12 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	t.score.drawScale = pixel.IM.Scaled(t.score.text.Orig, 6)
 
 	// Create Controls Text
-	textOrigY = win.Bounds().H() * 0.6
+	textOrigY = win.Bounds().H() * 0.5
 	textOrig = pixel.V(textOrigX, textOrigY)
 	t.controls.text = text.New(textOrig, t.atlas)
 	lines = []string{
-		"Start Game",
-		"Enter\n",
 		"Control Snake",
-		"Arrows\n",
+		"Arrow Keys\n",
 		"View Scores",
 		"S\n",
 		"Exit",
@@ -109,6 +122,11 @@ func (t *Type) DrawTitleText(win *pixelgl.Window) {
 // DrawGameOverText draws the game over text on the provided window
 func (t *Type) DrawGameOverText(win *pixelgl.Window) {
 	t.gameover.text.Draw(win, t.gameover.drawScale)
+}
+
+// DrawStartGameText draws the start game text on the provided window
+func (t *Type) DrawStartGameText(win *pixelgl.Window) {
+	t.startgame.text.Draw(win, t.startgame.drawScale)
 }
 
 // DrawControlsText draws the controls text on the provided window
