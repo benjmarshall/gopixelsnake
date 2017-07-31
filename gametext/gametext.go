@@ -55,7 +55,7 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	t.gameover.text = text.New(textOrig, t.atlas)
 	lines = []string{
 		"Game Over!",
-		"Press Enter to exit...",
+		"Press Enter to continue...",
 	}
 	t.gameover.text.Color = colornames.Black
 	for _, line := range lines {
@@ -63,7 +63,7 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 		fmt.Fprintln(t.gameover.text, line)
 	}
 	t.gameover.text.Orig.Add(pixel.V(0, t.gameover.text.BoundsOf(lines[0]).H()))
-	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 4)
+	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 3)
 
 	// Create Score Text
 	textOrigY = win.Bounds().H() * 0.8

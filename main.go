@@ -58,7 +58,7 @@ func run() {
 	var (
 		frames         = 0
 		second         = time.Tick(time.Second)
-		gameRunning    = true
+		gameRunning    = false
 		gameOver       = false
 		eaten          = false
 		inputKeyBuffer = []snake.Direction{}
@@ -130,6 +130,23 @@ func run() {
 			default:
 			}
 
+		} else if gameOver {
+			// Game has ended wait for user to continue
+			textStruct.DrawGameOverText(win)
+			if win.JustPressed(pixelgl.KeyEnter) {
+				// reset the board
+				gameOver = false
+				score = 0
+				berry = generateRandomBerry(&gameCFG)
+				s = snake.NewSnake(gameCFG)
+			}
+		} else {
+			// Game is not running so wait for user to do something!
+			if win.JustPressed(pixelgl.KeyEnter) {
+				gameRunning = true
+			} else if win.JustPressed(pixelgl.KeyX) {
+				win.SetClosed(true)
+			}
 		}
 
 		// Always draw the game
@@ -139,14 +156,6 @@ func run() {
 		textStruct.DrawTitleText(win)
 		textStruct.DrawScoreText(win, score)
 		textStruct.DrawControlsText(win)
-
-		// Check if the game is over
-		if gameOver {
-			textStruct.DrawGameOverText(win)
-			if win.JustPressed(pixelgl.KeyEnter) {
-				win.SetClosed(true)
-			}
-		}
 
 		// Always update the window
 		win.Update()
