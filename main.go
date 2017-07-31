@@ -63,6 +63,7 @@ func run() {
 		eaten          = false
 		inputKeyBuffer = []snake.Direction{}
 		dir            snake.Direction
+		score          = 0
 	)
 
 	// Draw the initial frames	// Clear the frame
@@ -119,6 +120,11 @@ func run() {
 					berry = generateRandomBerry(&gameCFG)
 					s.IncreaseSpeed()
 				}
+				// Update the score
+				score += int((s.GetSpeed() * 10))
+				if eaten {
+					score += int((1000 * s.GetSpeed()))
+				}
 			default:
 			}
 
@@ -129,6 +135,7 @@ func run() {
 		drawSnakeRect(win, imdGame, &gameCFG, &s)
 		drawBerry(win, imdBerry, &gameCFG, berry)
 		textStruct.DrawTitleText(win)
+		textStruct.DrawScoreText(win, score)
 
 		// Check if the game is over
 		if gameOver {

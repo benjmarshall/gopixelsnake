@@ -154,7 +154,6 @@ func (s *Type) Update(eaten bool, dir Direction) {
 			//log.Println("Moving tail towards point")
 			vec := s.tailPos.To(s.pointsList[len(s.pointsList)-1]).Unit()
 			s.tailPos = s.tailPos.Add(vec)
-			log.Println(vec)
 		}
 	}
 	// log.Println("Snake after update:")

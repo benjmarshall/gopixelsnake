@@ -2,6 +2,7 @@ package gametext
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
@@ -64,6 +65,16 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	t.gameover.text.Orig.Add(pixel.V(0, t.gameover.text.BoundsOf(lines[0]).H()))
 	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 4)
 
+	// Create Score Text
+	textOrigY = textOrigY - t.title.text.Bounds().H() - (win.Bounds().H() * 0.1)
+	textOrig = pixel.V(textOrigX, textOrigY)
+	t.score.text = text.New(textOrig, t.atlas)
+	t.score.text.Color = colornames.Black
+	scoreText := "0"
+	t.score.text.Dot.X = t.score.text.Orig.X - t.score.text.BoundsOf(scoreText).W()/2
+	fmt.Fprintln(t.score.text, scoreText)
+	t.score.drawScale = pixel.IM.Scaled(t.score.text.Orig, 6)
+
 	return *t
 
 }
@@ -76,4 +87,13 @@ func (t *Type) DrawTitleText(win *pixelgl.Window) {
 // DrawGameOverText draws the game over text on the provide window
 func (t *Type) DrawGameOverText(win *pixelgl.Window) {
 	t.gameover.text.Draw(win, t.gameover.drawScale)
+}
+
+// DrawScoreText draws the text on the provide window
+func (t *Type) DrawScoreText(win *pixelgl.Window, score int) {
+	scoreText := strconv.Itoa(score)
+	t.score.text.Clear()
+	t.score.text.Dot.X = t.score.text.Orig.X - t.score.text.BoundsOf(scoreText).W()/2
+	fmt.Fprintf(t.score.text, scoreText)
+	t.score.text.Draw(win, t.score.drawScale)
 }
