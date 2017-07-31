@@ -103,14 +103,17 @@ func (s *Type) GetTicker() time.Ticker {
 	return s.ticker
 }
 
+// IncreaseSpeed increase the speed of the snake
+func (s *Type) IncreaseSpeed() {
+	s.speed *= 1.5
+	s.ticker.Stop()
+	s.ticker = *time.NewTicker(time.Second / time.Duration(s.speed))
+}
+
 // Update is used to Update the status of snake position and speed.
 func (s *Type) Update(eaten bool, dir Direction) {
-	// If the snake has eaten let's up the speed and increase the length
+	// If the snake has eaten let's  the length
 	if eaten {
-		s.speed *= 1.5
-		s.ticker.Stop()
-		s.ticker = *time.NewTicker(time.Second / time.Duration(s.speed))
-		log.Printf("Speed Up: %v", s.speed)
 		s.length++
 	}
 
@@ -137,14 +140,16 @@ func (s *Type) Update(eaten bool, dir Direction) {
 
 	// Update the head position
 	s.headPos = s.headPos.Add(s.currentDirection.val)
-	// Update the tail position
-	if len(s.pointsList) == 0 {
-		s.tailPos = s.tailPos.Add(s.currentDirection.val)
-	} else {
-		//log.Println("Moving tail towards point")
-		vec := s.tailPos.To(s.pointsList[len(s.pointsList)-1]).Unit()
-		s.tailPos = s.tailPos.Add(vec)
-		log.Println(vec)
+	// Update the tail position (if we have eaten a berry, leave the tail where it is)
+	if !eaten {
+		if len(s.pointsList) == 0 {
+			s.tailPos = s.tailPos.Add(s.currentDirection.val)
+		} else {
+			//log.Println("Moving tail towards point")
+			vec := s.tailPos.To(s.pointsList[len(s.pointsList)-1]).Unit()
+			s.tailPos = s.tailPos.Add(vec)
+			log.Println(vec)
+		}
 	}
 	// log.Println("Snake after update:")
 	// log.Println(s.headPos)

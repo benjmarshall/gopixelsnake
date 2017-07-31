@@ -120,6 +120,7 @@ func run() {
 				eaten = s.CheckIfSnakeHasEaten(&gameCFG, berry)
 				if eaten {
 					berry = generateRandomBerry(&gameCFG)
+					s.IncreaseSpeed()
 				}
 			default:
 			}
