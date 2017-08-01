@@ -15,13 +15,12 @@ import (
 
 // Type holds the various text object for the game
 type Type struct {
-	title      snaketext
-	score      snaketext
-	controls   snaketext
-	gameover   snaketext
-	startgame  snaketext
-	scoresList snaketext
-	atlas      *text.Atlas
+	title     snaketext
+	score     snaketext
+	controls  snaketext
+	gameover  snaketext
+	startgame snaketext
+	atlas     *text.Atlas
 }
 
 // snaketext is a wrapper around pixel.text which also holds scale information for drawing
@@ -54,22 +53,10 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	t.title.drawScale = pixel.IM.Scaled(t.title.text.Orig, 4)
 
 	// Create Game Over Text
-	textOrig = gameCFG.GetWindowMatrix().Project(gameCFG.GetGameAreaAsRec().Center())
-	t.gameover.text = text.New(textOrig, t.atlas)
-	lines = []string{
-		"Game Over!",
-		"Press Enter to continue...",
-	}
-	t.gameover.text.Color = colornames.Black
-	for _, line := range lines {
-		t.gameover.text.Dot.X -= t.gameover.text.BoundsOf(line).W() / 2
-		fmt.Fprintln(t.gameover.text, line)
-	}
-	t.gameover.text.Orig.Add(pixel.V(0, t.gameover.text.BoundsOf(lines[0]).H()))
-	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 3)
 
 	// Create Start Game Text
-	t.startgame.text = text.New(t.gameover.text.Orig, t.atlas)
+	textOrig = gameCFG.GetWindowMatrix().Project(gameCFG.GetGameAreaAsRec().Center())
+	t.startgame.text = text.New(textOrig, t.atlas)
 	lines = []string{
 		"Hit an arrow key",
 		"to start a new game!",
@@ -99,7 +86,7 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	lines = []string{
 		"Control Snake",
 		"Arrow Keys\n",
-		"View Scores",
+		"High Scores",
 		"S\n",
 		"Exit",
 		"X",
@@ -112,12 +99,6 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	t.controls.text.LineHeight = 1.5
 	t.controls.drawScale = pixel.IM.Scaled(t.controls.text.Orig, 3)
 
-	// Create scoresList Text
-	textOrig = gameCFG.GetWindowMatrix().Project(pixel.V(gameCFG.GetGameAreaAsRec().Min.X+35, gameCFG.GetGameAreaAsRec().Max.Y-50))
-	t.scoresList.text = text.New(textOrig, t.atlas)
-	t.scoresList.text.Color = colornames.Black
-	t.scoresList.drawScale = pixel.IM.Scaled(t.scoresList.text.Orig, 3)
-
 	return *t
 
 }
@@ -128,7 +109,28 @@ func (t *Type) DrawTitleText(win *pixelgl.Window) {
 }
 
 // DrawGameOverText draws the game over text on the provided window
-func (t *Type) DrawGameOverText(win *pixelgl.Window) {
+func (t *Type) DrawGameOverText(win *pixelgl.Window, gameCFG *types.GameCFGType, name string) {
+	textOrigY := gameCFG.GetGameAreaAsRec().H() * 0.6
+	textOrigX := gameCFG.GetGameAreaAsRec().Center().X
+	textOrig := gameCFG.GetWindowMatrix().Project(pixel.V(textOrigX, textOrigY))
+	t.gameover.text = text.New(textOrig, t.atlas)
+	lines := []string{
+		"Game Over!",
+		"You have a new high score.",
+		"Please type your name and then",
+		"press Enter to continue...",
+	}
+	if name == "" {
+		lines = append(lines, "___")
+	} else {
+		lines = append(lines, name)
+	}
+	t.gameover.text.Color = colornames.Black
+	for _, line := range lines {
+		t.gameover.text.Dot.X -= t.gameover.text.BoundsOf(line).W() / 2
+		fmt.Fprintln(t.gameover.text, line)
+	}
+	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 3)
 	t.gameover.text.Draw(win, t.gameover.drawScale)
 }
 
@@ -157,12 +159,12 @@ func (t *Type) DrawScoresListText(win *pixelgl.Window, gameCFG *types.GameCFGTyp
 	lines := scoresTable.GetTopScores(10)
 	for i := 0; i < 3; i++ {
 		origY := orig.Y
-		origX := orig.X + (float64(i) * gameCFG.GetGameAreaAsRec().W() * 0.1)
+		origX := orig.X + (float64(i) * gameCFG.GetGameAreaAsRec().W() * 0.35)
 		text := text.New(pixel.V(origX, origY), t.atlas)
 		text.Color = colornames.Black
 		for _, line := range lines {
 			fmt.Fprintln(text, line[i])
 		}
-		text.Draw(win, t.scoresList.drawScale)
+		text.Draw(win, pixel.IM.Scaled(text.Orig, 3))
 	}
 }

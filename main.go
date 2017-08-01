@@ -69,6 +69,7 @@ func run() {
 		dir            snake.Direction
 		score          = 0
 		showScores     = false
+		scoreName      string
 	)
 
 	// Draw the initial frames	// Clear the frame
@@ -153,7 +154,6 @@ func run() {
 				if !s.CheckSnakeOK(&gameCFG) {
 					gameOver = true
 					gameRunning = false
-					scoresTable.AddScore(score, "ben")
 				}
 				// Check if the snake has eaten
 				eaten = s.CheckIfSnakeHasEaten(&gameCFG, berry)
@@ -172,13 +172,17 @@ func run() {
 		} else if gameOver {
 			// Game has ended wait for user to continue
 			if win.JustPressed(pixelgl.KeyEnter) {
+				scoresTable.AddScore(score, scoreName)
 				// reset the board
+				scoreName = ""
 				gameOver = false
 				score = 0
 				berry = generateRandomBerry(&gameCFG)
 				s = snake.NewSnake(gameCFG)
-			} else if win.JustPressed(pixelgl.KeyX) {
-				win.SetClosed(true)
+			} else if win.JustPressed(pixelgl.KeyBackspace) {
+				scoreName = scoreName[0 : len(scoreName)-1]
+			} else if len(scoreName) < 3 {
+				scoreName = scoreName + win.Typed()
 			}
 		}
 
@@ -195,7 +199,7 @@ func run() {
 			// Show the start game message
 			textStruct.DrawStartGameText(win)
 		} else if gameOver {
-			textStruct.DrawGameOverText(win)
+			textStruct.DrawGameOverText(win, &gameCFG, scoreName)
 		} else if showScores {
 			textStruct.DrawScoresListText(win, &gameCFG, &scoresTable)
 		}
