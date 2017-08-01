@@ -22,9 +22,10 @@ func main() {
 func run() {
 	// Setup Window Configuration
 	cfg := pixelgl.WindowConfig{
-		Title:  "Pixel Rocks!",
-		Bounds: pixel.R(0, 0, 1024, 768),
-		VSync:  true,
+		Title:     "Pixel Rocks!",
+		Bounds:    pixel.R(0, 0, 1024, 768),
+		Resizable: false,
+		VSync:     true,
 	}
 
 	// Create the window
