@@ -41,7 +41,7 @@ func run() {
 	textStruct := gametext.NewGameText(win, gameCFG)
 
 	// Setup a scores structure
-	scoresTable := scores.NewScores()
+	scoresTable := scores.NewScores("high_scores.csv")
 
 	// Initialize a new snake
 	s := snake.NewSnake(gameCFG)
@@ -104,7 +104,7 @@ func run() {
 				startDir = s.StartOfGame(snake.RIGHT)
 				gameRunning = true
 			} else if win.JustPressed(pixelgl.KeyX) {
-				win.SetClosed(true)
+				exit(win, &scoresTable)
 			}
 			if startDir != snake.NOCHANGE {
 				inputKeyBuffer = append(inputKeyBuffer, startDir)
@@ -116,7 +116,7 @@ func run() {
 			if win.JustPressed(pixelgl.KeyS) {
 				showScores = false
 			} else if win.JustPressed(pixelgl.KeyX) {
-				win.SetClosed(true)
+				exit(win, &scoresTable)
 			}
 		}
 
@@ -216,4 +216,9 @@ func run() {
 		}
 
 	}
+}
+
+func exit(win *pixelgl.Window, s *scores.Type) {
+	s.SaveScores()
+	win.SetClosed(true)
 }

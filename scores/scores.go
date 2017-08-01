@@ -1,6 +1,9 @@
 package scores
 
 import (
+	"encoding/csv"
+	"log"
+	"os"
 	"strconv"
 
 	"github.com/kniren/gota/dataframe"
@@ -9,14 +12,17 @@ import (
 // Type defines the data structure of the scores object
 type Type struct {
 	scoresRecord [][]string
+	scoresFile   string
 }
 
 // NewScores creates a new scores struct
-func NewScores() Type {
+func NewScores(filename string) Type {
 	t := new(Type)
+	t.scoresFile = filename
 	t.scoresRecord = [][]string{
 		[]string{"Name", "Points"},
 	}
+	t.LoadScores()
 	return *t
 }
 
@@ -52,4 +58,52 @@ func (t *Type) GetTopScores(n int) [][]string {
 	}
 
 	return topScoresSlice
+}
+
+// SaveScores saves the scores to a csv file
+func (t *Type) SaveScores() {
+	// If we haven't got any scores stop now
+	if len(t.scoresRecord) < 2 {
+		return
+	}
+
+	f, err := os.Create(t.scoresFile)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	scores := t.scoresRecord[1:len(t.scoresRecord)]
+
+	log.Println("Saving High Scores")
+	for _, value := range scores {
+		err := w.Write(value)
+		if err != nil {
+			return
+		}
+	}
+}
+
+// LoadScores loads saved scores from a csv file
+func (t *Type) LoadScores() {
+	f, err := os.Open(t.scoresFile)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+
+	r := csv.NewReader(f)
+	records, err := r.ReadAll()
+	if err != nil {
+		return
+	}
+
+	for _, record := range records {
+		t.scoresRecord = append(t.scoresRecord, record)
+	}
+
+	return
 }
