@@ -23,7 +23,7 @@
 
 [[constraint]]
   name = "github.com/faiface/pixel"
-  version = "0.6.0"
+  revision = "d34b63676d60b5cf88b599e8101176d81347ee30"
 
 [[constraint]]
   name = "github.com/kniren/gota"
