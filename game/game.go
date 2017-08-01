@@ -1,16 +1,18 @@
-package types
+package game
 
 import (
 	"errors"
 	"log"
 	"math"
+	"math/rand"
+	"time"
 
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 )
 
-// GameCFGType is a struct used to define the configuration of the game
-type GameCFGType struct {
+// Config is a struct used to define the configuration of the game
+type Config struct {
 	gameAreaDims            gameAreaDimsType
 	gameArea                pixel.Rect
 	gameAreaBorderThickness float64
@@ -24,9 +26,9 @@ type gameAreaDimsType struct {
 	y float64
 }
 
-// NewGameCFG returns and initialised Game Configuration Struct
-func NewGameCFG(xSize float64, ySize float64, borderWeight float64, gridSize float64, winCFG pixelgl.WindowConfig) GameCFGType {
-	gameCFG := new(GameCFGType)
+// NewGameConfig returns and initialised Game Configuration Struct
+func NewGameConfig(xSize float64, ySize float64, borderWeight float64, gridSize float64, winCFG pixelgl.WindowConfig) Config {
+	gameCFG := new(Config)
 	if math.Mod(xSize, gridSize) != 0 || math.Mod(ySize, gridSize) != 0 {
 		panic(errors.New("game Area must be a multiple of the grid size"))
 	}
@@ -50,36 +52,47 @@ func NewGameCFG(xSize float64, ySize float64, borderWeight float64, gridSize flo
 }
 
 // GetGridMatrix returns the matrix for the game grid which is used to translate the snake coordinates onto the game area.
-func (cfg *GameCFGType) GetGridMatrix() pixel.Matrix {
+func (cfg *Config) GetGridMatrix() pixel.Matrix {
 	return cfg.gameGridMatrix
 }
 
 // GetWindowMatrix returns the matrix for the game area which is used to translate the game area coordinates onto the window.
-func (cfg *GameCFGType) GetWindowMatrix() pixel.Matrix {
+func (cfg *Config) GetWindowMatrix() pixel.Matrix {
 	return cfg.gameWindowMatrix
 }
 
 // GetGridSize returns the pixel size of the game grid
-func (cfg *GameCFGType) GetGridSize() float64 {
+func (cfg *Config) GetGridSize() float64 {
 	return cfg.gameGridSize
 }
 
 // GetGameAreaDims returns the dimensions of the game area
-func (cfg *GameCFGType) GetGameAreaDims() (x float64, y float64) {
+func (cfg *Config) GetGameAreaDims() (x float64, y float64) {
 	return cfg.gameAreaDims.x, cfg.gameAreaDims.y
 }
 
 // GetGameAreaAsVecs returns the vectors representing the game area in it's native coordinates
-func (cfg *GameCFGType) GetGameAreaAsVecs() (min pixel.Vec, max pixel.Vec) {
+func (cfg *Config) GetGameAreaAsVecs() (min pixel.Vec, max pixel.Vec) {
 	return cfg.gameArea.Min, cfg.gameArea.Max
 }
 
 // GetGameAreaAsRec returns the rectangle representing the game area in it's native coordinates
-func (cfg *GameCFGType) GetGameAreaAsRec() pixel.Rect {
+func (cfg *Config) GetGameAreaAsRec() pixel.Rect {
 	return cfg.gameArea
 }
 
 // GetBorderWeight returns the weight in pixels of the border of the game area
-func (cfg *GameCFGType) GetBorderWeight() float64 {
+func (cfg *Config) GetBorderWeight() float64 {
 	return cfg.gameAreaBorderThickness
+}
+
+// GenerateRandomBerry generates a new berry in a random location
+func GenerateRandomBerry(gameCFG *Config) pixel.Vec {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	x, y := gameCFG.GetGameAreaDims()
+	berryX := float64(r.Intn(int(x/gameCFG.GetGridSize()) - 1))
+	berryY := float64(r.Intn(int(y/gameCFG.GetGridSize()) - 1))
+	berry := pixel.V(berryX, berryY)
+	log.Printf("Berry: %v", berry)
+	return gameCFG.GetGridMatrix().Project(berry)
 }

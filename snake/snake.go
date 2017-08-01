@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/benjmarshall/gosnake/types"
+	"github.com/benjmarshall/gosnake/game"
 	"github.com/faiface/pixel"
 )
 
@@ -17,7 +17,7 @@ type Type struct {
 	speed            float64
 	currentDirection Direction
 	pointsList       []pixel.Vec
-	gameCFG          *types.GameCFGType
+	gameCFG          *game.Config
 	ticker           time.Ticker
 	tickerChannel    chan time.Time
 	startChannel     chan time.Time
@@ -42,7 +42,7 @@ var (
 )
 
 // NewSnake returns an initialised snake
-func NewSnake(gameCFG types.GameCFGType) Type {
+func NewSnake(gameCFG game.Config) Type {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	snake := new(Type)
 	snake.gameCFG = &gameCFG
@@ -171,7 +171,7 @@ func (s *Type) Update(eaten bool, dir Direction) {
 }
 
 // CheckSnakeOK is used to check the snake hasn't exicted the game area and has not hit itself
-func (s *Type) CheckSnakeOK(gameCFG *types.GameCFGType) bool {
+func (s *Type) CheckSnakeOK(gameCFG *game.Config) bool {
 
 	// Check snake is inside the game boundary
 	if !gameCFG.GetGameAreaAsRec().Contains(s.GetHeadPos()) {
@@ -218,7 +218,7 @@ func (s *Type) CheckSnakeOK(gameCFG *types.GameCFGType) bool {
 }
 
 // CheckIfSnakeHasEaten is used to check the snake has easten the berry
-func (s *Type) CheckIfSnakeHasEaten(gameCFG *types.GameCFGType, berry pixel.Vec) bool {
+func (s *Type) CheckIfSnakeHasEaten(gameCFG *game.Config, berry pixel.Vec) bool {
 	berryTransformed := gameCFG.GetGridMatrix().Unproject(berry)
 	if s.headPos == berryTransformed {
 		return true

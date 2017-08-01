@@ -2,15 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"math/rand"
 	"time"
 
 	"github.com/benjmarshall/gosnake/drawing"
+	"github.com/benjmarshall/gosnake/game"
 	"github.com/benjmarshall/gosnake/gametext"
 	"github.com/benjmarshall/gosnake/scores"
 	"github.com/benjmarshall/gosnake/snake"
-	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -36,7 +34,7 @@ func run() {
 	}
 
 	// Setup Game Configuration
-	gameCFG := types.NewGameCFG(700, 700, 2, 10, cfg)
+	gameCFG := game.NewGameConfig(700, 700, 2, 10, cfg)
 
 	// Setup text structure
 	textStruct := gametext.NewGameText(win, gameCFG)
@@ -48,7 +46,7 @@ func run() {
 	s := snake.NewSnake(gameCFG)
 
 	// Generate a berry
-	berry := generateRandomBerry(&gameCFG)
+	berry := game.GenerateRandomBerry(&gameCFG)
 
 	// Create the Game Background Shape
 	imdArea := imdraw.New(nil)
@@ -154,7 +152,7 @@ func run() {
 				// Check if the snake has eaten
 				eaten = s.CheckIfSnakeHasEaten(&gameCFG, berry)
 				if eaten {
-					berry = generateRandomBerry(&gameCFG)
+					berry = game.GenerateRandomBerry(&gameCFG)
 					s.IncreaseSpeed()
 				}
 				// Update the score
@@ -174,7 +172,7 @@ func run() {
 				scoreName = ""
 				gameOver = false
 				score = 0
-				berry = generateRandomBerry(&gameCFG)
+				berry = game.GenerateRandomBerry(&gameCFG)
 				s = snake.NewSnake(gameCFG)
 			} else if win.JustPressed(pixelgl.KeyBackspace) {
 				// Add support for deleting charaters from score name
@@ -217,14 +215,4 @@ func run() {
 		}
 
 	}
-}
-
-func generateRandomBerry(gameCFG *types.GameCFGType) pixel.Vec {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	x, y := gameCFG.GetGameAreaDims()
-	berryX := float64(r.Intn(int(x/gameCFG.GetGridSize()) - 1))
-	berryY := float64(r.Intn(int(y/gameCFG.GetGridSize()) - 1))
-	berry := pixel.V(berryX, berryY)
-	log.Printf("Berry: %v", berry)
-	return gameCFG.GetGridMatrix().Project(berry)
 }

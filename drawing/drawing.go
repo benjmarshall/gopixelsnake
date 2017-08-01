@@ -1,8 +1,8 @@
 package drawing
 
 import (
+	"github.com/benjmarshall/gosnake/game"
 	"github.com/benjmarshall/gosnake/snake"
-	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
@@ -10,7 +10,7 @@ import (
 )
 
 // DrawGameBackground draws the game area border
-func DrawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType) {
+func DrawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *game.Config) {
 	imd.Clear()
 	imd.Color = colornames.White
 	min, max := gameCFG.GetGameAreaAsVecs()
@@ -25,7 +25,7 @@ func DrawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.
 }
 
 // DrawSnakeRect draws the snake shape using rectangles
-func DrawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, s *snake.Type) {
+func DrawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *game.Config, s *snake.Type) {
 	imd.Clear()
 	imd.Color = colornames.Purple
 	positions := []pixel.Vec{s.GetHeadPos()}
@@ -43,7 +43,7 @@ func DrawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameC
 }
 
 // DrawBerry draws the berry shape
-func DrawBerry(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, berry pixel.Vec) {
+func DrawBerry(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *game.Config, berry pixel.Vec) {
 	berry = gameCFG.GetWindowMatrix().Project(berry)
 	imd.Clear()
 	imd.Color = colornames.Orangered

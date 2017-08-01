@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/benjmarshall/gosnake/game"
 	"github.com/benjmarshall/gosnake/scores"
-	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"
@@ -30,7 +30,7 @@ type snaketext struct {
 }
 
 // NewGameText generates a new game text structure used to control all text display for the game
-func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
+func NewGameText(win *pixelgl.Window, gameCFG game.Config) Type {
 	t := new(Type)
 	// Create a text Atlas
 	t.atlas = text.NewAtlas(basicfont.Face7x13, text.ASCII)
@@ -109,7 +109,7 @@ func (t *Type) DrawTitleText(win *pixelgl.Window) {
 }
 
 // DrawGameOverText draws the game over text on the provided window
-func (t *Type) DrawGameOverText(win *pixelgl.Window, gameCFG *types.GameCFGType, name string) {
+func (t *Type) DrawGameOverText(win *pixelgl.Window, gameCFG *game.Config, name string) {
 	textOrigY := gameCFG.GetGameAreaAsRec().H() * 0.6
 	textOrigX := gameCFG.GetGameAreaAsRec().Center().X
 	textOrig := gameCFG.GetWindowMatrix().Project(pixel.V(textOrigX, textOrigY))
@@ -154,7 +154,7 @@ func (t *Type) DrawScoreText(win *pixelgl.Window, score int) {
 }
 
 // DrawScoresListText draws the scores list on the provided window
-func (t *Type) DrawScoresListText(win *pixelgl.Window, gameCFG *types.GameCFGType, scoresTable *scores.Type) {
+func (t *Type) DrawScoresListText(win *pixelgl.Window, gameCFG *game.Config, scoresTable *scores.Type) {
 	orig := gameCFG.GetWindowMatrix().Project(pixel.V(gameCFG.GetGameAreaAsRec().Min.X+35, gameCFG.GetGameAreaAsRec().Max.Y-50))
 	lines := scoresTable.GetTopScores(10)
 	for i := 0; i < 3; i++ {
