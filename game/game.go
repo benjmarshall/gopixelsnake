@@ -93,6 +93,5 @@ func GenerateRandomBerry(gameCFG *Config) pixel.Vec {
 	berryX := float64(r.Intn(int(x/gameCFG.GetGridSize()) - 1))
 	berryY := float64(r.Intn(int(y/gameCFG.GetGridSize()) - 1))
 	berry := pixel.V(berryX, berryY)
-	log.Printf("Berry: %v", berry)
 	return gameCFG.GetGridMatrix().Project(berry)
 }
