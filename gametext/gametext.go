@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/benjmarshall/gosnake/scores"
 	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
@@ -14,12 +15,13 @@ import (
 
 // Type holds the various text object for the game
 type Type struct {
-	title     snaketext
-	score     snaketext
-	controls  snaketext
-	gameover  snaketext
-	startgame snaketext
-	atlas     *text.Atlas
+	title      snaketext
+	score      snaketext
+	controls   snaketext
+	gameover   snaketext
+	startgame  snaketext
+	scoresList snaketext
+	atlas      *text.Atlas
 }
 
 // snaketext is a wrapper around pixel.text which also holds scale information for drawing
@@ -110,6 +112,12 @@ func NewGameText(win *pixelgl.Window, gameCFG types.GameCFGType) Type {
 	t.controls.text.LineHeight = 1.5
 	t.controls.drawScale = pixel.IM.Scaled(t.controls.text.Orig, 3)
 
+	// Create scoresList Text
+	textOrig = gameCFG.GetWindowMatrix().Project(pixel.V(gameCFG.GetGameAreaAsRec().Min.X+35, gameCFG.GetGameAreaAsRec().Max.Y-50))
+	t.scoresList.text = text.New(textOrig, t.atlas)
+	t.scoresList.text.Color = colornames.Black
+	t.scoresList.drawScale = pixel.IM.Scaled(t.scoresList.text.Orig, 3)
+
 	return *t
 
 }
@@ -134,11 +142,27 @@ func (t *Type) DrawControlsText(win *pixelgl.Window) {
 	t.controls.text.Draw(win, t.controls.drawScale)
 }
 
-// DrawScoreText draws the text on the provide window
+// DrawScoreText draws the score text on the provided window
 func (t *Type) DrawScoreText(win *pixelgl.Window, score int) {
 	scoreText := strconv.Itoa(score)
 	t.score.text.Clear()
 	t.score.text.Dot.X = t.score.text.Orig.X - t.score.text.BoundsOf(scoreText).W()/2
 	fmt.Fprintf(t.score.text, scoreText)
 	t.score.text.Draw(win, t.score.drawScale)
+}
+
+// DrawScoresListText draws the scores list on the provided window
+func (t *Type) DrawScoresListText(win *pixelgl.Window, gameCFG *types.GameCFGType, scoresTable *scores.Type) {
+	orig := gameCFG.GetWindowMatrix().Project(pixel.V(gameCFG.GetGameAreaAsRec().Min.X+35, gameCFG.GetGameAreaAsRec().Max.Y-50))
+	lines := scoresTable.GetTopScores(10)
+	for i := 0; i < 3; i++ {
+		origY := orig.Y
+		origX := orig.X + (float64(i) * gameCFG.GetGameAreaAsRec().W() * 0.1)
+		text := text.New(pixel.V(origX, origY), t.atlas)
+		text.Color = colornames.Black
+		for _, line := range lines {
+			fmt.Fprintln(text, line[i])
+		}
+		text.Draw(win, t.scoresList.drawScale)
+	}
 }

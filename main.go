@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/benjmarshall/gosnake/gametext"
+	"github.com/benjmarshall/gosnake/scores"
 	"github.com/benjmarshall/gosnake/snake"
 	"github.com/benjmarshall/gosnake/types"
 	"github.com/faiface/pixel"
@@ -39,6 +40,9 @@ func run() {
 	// Setup text structure
 	textStruct := gametext.NewGameText(win, gameCFG)
 
+	// Setup a scores structure
+	scoresTable := scores.NewScores()
+
 	// Initialize a new snake
 	s := snake.NewSnake(gameCFG)
 
@@ -64,6 +68,7 @@ func run() {
 		inputKeyBuffer = []snake.Direction{}
 		dir            snake.Direction
 		score          = 0
+		showScores     = false
 	)
 
 	// Draw the initial frames	// Clear the frame
@@ -82,7 +87,7 @@ func run() {
 		// Clear the screen
 		win.Clear(colornames.Darkcyan)
 
-		if !gameRunning && !gameOver {
+		if !gameRunning && !gameOver && !showScores {
 			// Game is not running so wait for user to do something!
 			// Catch user input
 			startDir := snake.NOCHANGE
@@ -103,6 +108,15 @@ func run() {
 			}
 			if startDir != snake.NOCHANGE {
 				inputKeyBuffer = append(inputKeyBuffer, startDir)
+			}
+			if win.JustPressed(pixelgl.KeyS) {
+				showScores = true
+			}
+		} else if !gameRunning && !gameOver && showScores {
+			if win.JustPressed(pixelgl.KeyS) {
+				showScores = false
+			} else if win.JustPressed(pixelgl.KeyX) {
+				win.SetClosed(true)
 			}
 		}
 
@@ -139,6 +153,7 @@ func run() {
 				if !s.CheckSnakeOK(&gameCFG) {
 					gameOver = true
 					gameRunning = false
+					scoresTable.AddScore(score, "ben")
 				}
 				// Check if the snake has eaten
 				eaten = s.CheckIfSnakeHasEaten(&gameCFG, berry)
@@ -169,16 +184,20 @@ func run() {
 
 		// Always draw the game
 		drawGameBackground(win, imdArea, &gameCFG)
-		drawSnakeRect(win, imdGame, &gameCFG, &s)
-		drawBerry(win, imdBerry, &gameCFG, berry)
+		if !showScores {
+			drawSnakeRect(win, imdGame, &gameCFG, &s)
+			drawBerry(win, imdBerry, &gameCFG, berry)
+		}
 		textStruct.DrawTitleText(win)
 		textStruct.DrawScoreText(win, score)
 		textStruct.DrawControlsText(win)
-		if !gameRunning && !gameOver {
+		if !gameRunning && !gameOver && !showScores {
 			// Show the start game message
 			textStruct.DrawStartGameText(win)
 		} else if gameOver {
 			textStruct.DrawGameOverText(win)
+		} else if showScores {
+			textStruct.DrawScoresListText(win, &gameCFG, &scoresTable)
 		}
 
 		// Always update the window
