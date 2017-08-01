@@ -67,14 +67,10 @@ func NewSnake(gameCFG game.Config) Type {
 	default:
 		snake.currentDirection = UP
 	}
-	snake.tailPos = snake.headPos.Sub(snake.dir().Scaled(snake.length - 1))
+	snake.tailPos = snake.headPos.Sub(snake.currentDirection.val.Scaled(snake.length - 1))
 	log.Println("__Snake Config__")
 	log.Printf("Direction: %v", snake.currentDirection)
 	return *snake
-}
-
-func (s *Type) dir() pixel.Vec {
-	return s.currentDirection.val
 }
 
 // GetHeadPos returns the position of the head of the snake in the game area coordinate plane
@@ -140,13 +136,10 @@ func (s *Type) Update(eaten bool, dir Direction) {
 	}
 	if len(s.pointsList) > 0 {
 		if s.tailPos == s.pointsList[len(s.pointsList)-1] {
-			//log.Println("Checking tail pos")
 			// If the tail is on our last point the remove it from the current stack
 			if len(s.pointsList) <= 1 {
-				//log.Println("only 1")
 				s.pointsList = []pixel.Vec{}
 			} else {
-				//log.Println("mod list")
 				s.pointsList = s.pointsList[0 : len(s.pointsList)-1]
 			}
 		}
@@ -159,15 +152,10 @@ func (s *Type) Update(eaten bool, dir Direction) {
 		if len(s.pointsList) == 0 {
 			s.tailPos = s.tailPos.Add(s.currentDirection.val)
 		} else {
-			//log.Println("Moving tail towards point")
 			vec := s.tailPos.To(s.pointsList[len(s.pointsList)-1]).Unit()
 			s.tailPos = s.tailPos.Add(vec)
 		}
 	}
-	// log.Println("Snake after update:")
-	// log.Println(s.headPos)
-	// log.Println(s.pointsList)
-	// log.Println(s.tailPos)
 }
 
 // CheckSnakeOK is used to check the snake hasn't exicted the game area and has not hit itself
@@ -175,9 +163,6 @@ func (s *Type) CheckSnakeOK(gameCFG *game.Config) bool {
 
 	// Check snake is inside the game boundary
 	if !gameCFG.GetGameAreaAsRec().Contains(s.GetHeadPos()) {
-		log.Println("Game Over")
-		log.Printf("Snake Head: %v", s.GetHeadPos())
-		log.Printf("Game Area: %v", gameCFG.GetGameAreaAsRec())
 		return false
 	}
 
@@ -186,9 +171,6 @@ func (s *Type) CheckSnakeOK(gameCFG *game.Config) bool {
 	positions := []pixel.Vec{}
 	positions = append(positions, s.pointsList...)
 	positions = append(positions, s.tailPos)
-	// log.Println("Checking snake hit")
-	// log.Printf("Head Pos: %v", s.headPos)
-	// log.Printf("Tail Pos: %v", s.tailPos)
 	// Loop over the positions
 	for i := 0; i < len(positions)-1; i++ {
 		// Get the length of the line from one turn position to the next
@@ -201,12 +183,10 @@ func (s *Type) CheckSnakeOK(gameCFG *game.Config) bool {
 				interpPoint := j / (l - 1)
 				interpVal := pixel.Lerp(positions[i], positions[i+1], interpPoint)
 				subPositions = append(subPositions, interpVal)
-				// log.Printf("Adding subpixel %f, interpolated using interp point %v, from length of %v", interpVal, interpPoint, l)
 			}
 		}
 		subPositions = append(subPositions, positions[i+1])
 		// Now loop over the slice of points along the line and see if we have a colision.
-		// log.Printf("Checking pixels: %v", subPositions)
 		for _, subPos := range subPositions {
 			if s.headPos == subPos {
 				return false
