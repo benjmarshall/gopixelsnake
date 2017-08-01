@@ -20,7 +20,7 @@ func DrawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *game.C
 	min = min.Sub(vec)
 	max = max.Add(vec)
 	imd.Push(min, max)
-	imd.Rectangle(2)
+	imd.Rectangle(gameCFG.GetBorderWeight())
 	imd.Draw(win)
 }
 
