@@ -15,12 +15,13 @@ import (
 
 // Type holds the various text object for the game
 type Type struct {
-	title     snaketext
-	score     snaketext
-	controls  snaketext
-	gameover  snaketext
-	startgame snaketext
-	atlas     *text.Atlas
+	title        snaketext
+	score        snaketext
+	controls     snaketext
+	gameover     snaketext
+	gameoverText []string
+	startgame    snaketext
+	atlas        *text.Atlas
 }
 
 // snaketext is a wrapper around pixel.text which also holds scale information for drawing
@@ -52,24 +53,8 @@ func NewGameText(win *pixelgl.Window, gameCFG game.Config) Type {
 	}
 	t.title.drawScale = pixel.IM.Scaled(t.title.text.Orig, 4)
 
-	// Create Game Over Text
-
-	// Create Start Game Text
-	textOrig = gameCFG.GetWindowMatrix().Project(gameCFG.GetGameAreaAsRec().Center())
-	t.startgame.text = text.New(textOrig, t.atlas)
-	lines = []string{
-		"Hit an arrow key",
-		"to start a new game!",
-	}
-	t.startgame.text.Color = colornames.Black
-	for _, line := range lines {
-		t.startgame.text.Dot.X -= t.startgame.text.BoundsOf(line).W() / 2
-		fmt.Fprintln(t.startgame.text, line)
-	}
-	t.startgame.text.Orig.Add(pixel.V(0, t.startgame.text.BoundsOf(lines[0]).H()))
-	t.startgame.drawScale = pixel.IM.Scaled(t.startgame.text.Orig, 3)
-
 	// Create Score Text
+	textOrigX = win.Bounds().W() - (textColumnWidth / 2)
 	textOrigY = win.Bounds().H() * 0.8
 	textOrig = pixel.V(textOrigX, textOrigY)
 	t.score.text = text.New(textOrig, t.atlas)
@@ -80,6 +65,7 @@ func NewGameText(win *pixelgl.Window, gameCFG game.Config) Type {
 	t.score.drawScale = pixel.IM.Scaled(t.score.text.Orig, 6)
 
 	// Create Controls Text
+	textOrigX = win.Bounds().W() - (textColumnWidth / 2)
 	textOrigY = win.Bounds().H() * 0.5
 	textOrig = pixel.V(textOrigX, textOrigY)
 	t.controls.text = text.New(textOrig, t.atlas)
@@ -99,6 +85,35 @@ func NewGameText(win *pixelgl.Window, gameCFG game.Config) Type {
 	t.controls.text.LineHeight = 1.5
 	t.controls.drawScale = pixel.IM.Scaled(t.controls.text.Orig, 3)
 
+	// Create Start Game Text
+	textOrig = gameCFG.GetWindowMatrix().Project(gameCFG.GetGameAreaAsRec().Center())
+	t.startgame.text = text.New(textOrig, t.atlas)
+	lines = []string{
+		"Hit an arrow key",
+		"to start a new game!",
+	}
+	t.startgame.text.Color = colornames.Black
+	for _, line := range lines {
+		t.startgame.text.Dot.X -= t.startgame.text.BoundsOf(line).W() / 2
+		fmt.Fprintln(t.startgame.text, line)
+	}
+	t.startgame.text.Orig.Add(pixel.V(0, t.startgame.text.BoundsOf(lines[0]).H()))
+	t.startgame.drawScale = pixel.IM.Scaled(t.startgame.text.Orig, 3)
+
+	// Create Game Over Text
+	textOrigY = gameCFG.GetGameAreaAsRec().H() * 0.6
+	textOrigX = gameCFG.GetGameAreaAsRec().Center().X
+	textOrig = gameCFG.GetWindowMatrix().Project(pixel.V(textOrigX, textOrigY))
+	t.gameover.text = text.New(textOrig, t.atlas)
+	t.gameoverText = []string{
+		"Game Over!",
+		"You have a new high score.",
+		"Please type your name and then",
+		"press Enter to continue...",
+	}
+	t.gameover.text.Color = colornames.Black
+	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 3)
+
 	return *t
 
 }
@@ -110,27 +125,18 @@ func (t *Type) DrawTitleText(win *pixelgl.Window) {
 
 // DrawGameOverText draws the game over text on the provided window
 func (t *Type) DrawGameOverText(win *pixelgl.Window, gameCFG *game.Config, name string) {
-	textOrigY := gameCFG.GetGameAreaAsRec().H() * 0.6
-	textOrigX := gameCFG.GetGameAreaAsRec().Center().X
-	textOrig := gameCFG.GetWindowMatrix().Project(pixel.V(textOrigX, textOrigY))
-	t.gameover.text = text.New(textOrig, t.atlas)
-	lines := []string{
-		"Game Over!",
-		"You have a new high score.",
-		"Please type your name and then",
-		"press Enter to continue...",
-	}
+	t.gameover.text.Clear()
+	t.gameover.text.Dot.Y = t.gameover.text.Orig.Y
+	lines := t.gameoverText
 	if name == "" {
 		lines = append(lines, "___")
 	} else {
 		lines = append(lines, name)
 	}
-	t.gameover.text.Color = colornames.Black
 	for _, line := range lines {
 		t.gameover.text.Dot.X -= t.gameover.text.BoundsOf(line).W() / 2
 		fmt.Fprintln(t.gameover.text, line)
 	}
-	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 3)
 	t.gameover.text.Draw(win, t.gameover.drawScale)
 }
 
