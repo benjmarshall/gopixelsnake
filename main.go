@@ -162,6 +162,8 @@ func run() {
 				score = 0
 				berry = generateRandomBerry(&gameCFG)
 				s = snake.NewSnake(gameCFG)
+			} else if win.JustPressed(pixelgl.KeyX) {
+				win.SetClosed(true)
 			}
 		}
 
