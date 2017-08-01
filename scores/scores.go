@@ -2,17 +2,17 @@ package scores
 
 import (
 	"encoding/csv"
-	"log"
-	"os"
 	"strconv"
 
 	"github.com/kniren/gota/dataframe"
+	"github.com/shibukawa/configdir"
 )
 
 // Type defines the data structure of the scores object
 type Type struct {
 	scoresRecord [][]string
 	scoresFile   string
+	configDirs   configdir.ConfigDir
 }
 
 // NewScores creates a new scores struct
@@ -22,6 +22,7 @@ func NewScores(filename string) Type {
 	t.scoresRecord = [][]string{
 		[]string{"Name", "Points"},
 	}
+	t.configDirs = configdir.New("benjmarshall", "gopixelsnake")
 	t.LoadScores()
 	return *t
 }
@@ -67,7 +68,9 @@ func (t *Type) SaveScores() {
 		return
 	}
 
-	f, err := os.Create(t.scoresFile)
+	folders := t.configDirs.QueryFolders(configdir.Global)
+
+	f, err := folders[0].Create(t.scoresFile)
 	if err != nil {
 		return
 	}
@@ -78,7 +81,6 @@ func (t *Type) SaveScores() {
 
 	scores := t.scoresRecord[1:len(t.scoresRecord)]
 
-	log.Println("Saving High Scores")
 	for _, value := range scores {
 		err := w.Write(value)
 		if err != nil {
@@ -89,20 +91,23 @@ func (t *Type) SaveScores() {
 
 // LoadScores loads saved scores from a csv file
 func (t *Type) LoadScores() {
-	f, err := os.Open(t.scoresFile)
-	if err != nil {
-		return
-	}
-	defer f.Close()
+	folder := t.configDirs.QueryFolderContainsFile(t.scoresFile)
+	if folder != nil {
+		f, err := folder.Open(t.scoresFile)
+		if err != nil {
+			return
+		}
+		defer f.Close()
 
-	r := csv.NewReader(f)
-	records, err := r.ReadAll()
-	if err != nil {
-		return
-	}
+		r := csv.NewReader(f)
+		records, err := r.ReadAll()
+		if err != nil {
+			return
+		}
 
-	for _, record := range records {
-		t.scoresRecord = append(t.scoresRecord, record)
+		for _, record := range records {
+			t.scoresRecord = append(t.scoresRecord, record)
+		}
 	}
 
 	return
