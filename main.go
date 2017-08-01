@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/benjmarshall/gosnake/drawing"
 	"github.com/benjmarshall/gosnake/gametext"
 	"github.com/benjmarshall/gosnake/scores"
 	"github.com/benjmarshall/gosnake/snake"
@@ -72,11 +73,11 @@ func run() {
 		scoreName      string
 	)
 
-	// Draw the initial frames	// Clear the frame
+	// Draw the initial frames
 	win.Clear(colornames.Darkcyan)
-	drawGameBackground(win, imdArea, &gameCFG)
-	drawSnakeRect(win, imdGame, &gameCFG, &s)
-	drawBerry(win, imdBerry, &gameCFG, berry)
+	drawing.DrawGameBackground(win, imdArea, &gameCFG)
+	drawing.DrawSnakeRect(win, imdGame, &gameCFG, &s)
+	drawing.DrawBerry(win, imdBerry, &gameCFG, berry)
 	textStruct.DrawTitleText(win)
 	textStruct.DrawScoreText(win, score)
 	textStruct.DrawControlsText(win)
@@ -90,7 +91,6 @@ func run() {
 
 		if !gameRunning && !gameOver && !showScores {
 			// Game is not running so wait for user to do something!
-			// Catch user input
 			startDir := snake.NOCHANGE
 			if win.JustPressed(pixelgl.KeyUp) {
 				startDir = s.StartOfGame(snake.UP)
@@ -146,10 +146,6 @@ func run() {
 					inputKeyBuffer = inputKeyBuffer[1:len(inputKeyBuffer)]
 				}
 				s.Update(eaten, dir)
-				// Debug
-				// log.Println(s.GetHeadPos())
-				// log.Println(s.GetPositionPoints())
-				// log.Println(s.GetTailPos())
 				// Check the snake is still in bounds
 				if !s.CheckSnakeOK(&gameCFG) {
 					gameOver = true
@@ -170,8 +166,9 @@ func run() {
 			}
 
 		} else if gameOver {
-			// Game has ended wait for user to continue
+			// Game has ended, wait for user to continue
 			if win.JustPressed(pixelgl.KeyEnter) {
+				// Submit score and reset for a new game
 				scoresTable.AddScore(score, scoreName)
 				// reset the board
 				scoreName = ""
@@ -180,17 +177,20 @@ func run() {
 				berry = generateRandomBerry(&gameCFG)
 				s = snake.NewSnake(gameCFG)
 			} else if win.JustPressed(pixelgl.KeyBackspace) {
+				// Add support for deleting charaters from score name
 				scoreName = scoreName[0 : len(scoreName)-1]
 			} else if len(scoreName) < 3 {
+				// Capture input for score name (up to 3 chars)
 				scoreName = scoreName + win.Typed()
 			}
 		}
 
 		// Always draw the game
-		drawGameBackground(win, imdArea, &gameCFG)
+		drawing.DrawGameBackground(win, imdArea, &gameCFG)
 		if !showScores {
-			drawSnakeRect(win, imdGame, &gameCFG, &s)
-			drawBerry(win, imdBerry, &gameCFG, berry)
+			// Hide game elements if high scores are being diplayed
+			drawing.DrawSnakeRect(win, imdGame, &gameCFG, &s)
+			drawing.DrawBerry(win, imdBerry, &gameCFG, berry)
 		}
 		textStruct.DrawTitleText(win)
 		textStruct.DrawScoreText(win, score)
@@ -217,46 +217,6 @@ func run() {
 		}
 
 	}
-}
-
-func drawGameBackground(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType) {
-	imd.Clear()
-	imd.Color = colornames.White
-	min, max := gameCFG.GetGameAreaAsVecs()
-	min = gameCFG.GetWindowMatrix().Project(min)
-	max = gameCFG.GetWindowMatrix().Project(max)
-	vec := pixel.V(gameCFG.GetBorderWeight()/2, gameCFG.GetBorderWeight()/2)
-	min = min.Sub(vec)
-	max = max.Add(vec)
-	imd.Push(min, max)
-	imd.Rectangle(2)
-	imd.Draw(win)
-}
-
-func drawSnakeRect(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, s *snake.Type) {
-	imd.Clear()
-	imd.Color = colornames.Purple
-	positions := []pixel.Vec{s.GetHeadPos()}
-	positions = append(positions, s.GetPositionPoints()...)
-	positions = append(positions, s.GetTailPos())
-	for _, pos := range positions {
-		m := gameCFG.GetWindowMatrix()
-		vec := pixel.V(gameCFG.GetGridSize()/2, gameCFG.GetGridSize()/2)
-		min := m.Project(pos).Sub(vec)
-		max := m.Project(pos).Add(vec)
-		imd.Push(min, max)
-	}
-	imd.Rectangle(0)
-	imd.Draw(win)
-}
-
-func drawBerry(win *pixelgl.Window, imd *imdraw.IMDraw, gameCFG *types.GameCFGType, berry pixel.Vec) {
-	berry = gameCFG.GetWindowMatrix().Project(berry)
-	imd.Clear()
-	imd.Color = colornames.Orangered
-	imd.Push(berry)
-	imd.Circle(gameCFG.GetGridSize()/2, 0)
-	imd.Draw(win)
 }
 
 func generateRandomBerry(gameCFG *types.GameCFGType) pixel.Vec {
