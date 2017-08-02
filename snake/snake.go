@@ -206,9 +206,6 @@ func (s *Type) CheckIfSnakeHasEaten(gameCFG *game.Config, berry pixel.Vec) bool 
 	return false
 }
 
-// BUG: Somewhere here we have a bug which makes the snake take an extra step formwards before responding to the next user input
-// if the game is started with a turn!
-
 // StartOfGame is used to allow the starting of the game with the arrow keys to choose
 // the initial direction of the snake.
 func (s *Type) StartOfGame(dir Direction) {
