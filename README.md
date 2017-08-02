@@ -2,7 +2,7 @@
 
 Go Pixel Snake is a weekend project to create a Snake game in Go, using the [Pixel game engine](https://github.com/faiface/pixel).
 
-![Go Pixel Snake](resources/scheenshot.png)
+![Go Pixel Snake](/resources/screenshot.png)
 
 ## Install
 ### Build from source
