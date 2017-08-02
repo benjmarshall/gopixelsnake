@@ -2,6 +2,7 @@ package scores
 
 import (
 	"encoding/csv"
+	"log"
 	"strconv"
 
 	"github.com/kniren/gota/dataframe"
@@ -13,28 +14,37 @@ type Type struct {
 	scoresRecord [][]string
 	scoresFile   string
 	configDirs   configdir.ConfigDir
+	numScores    int
 }
 
 // NewScores creates a new scores struct
-func NewScores(filename string) Type {
+func NewScores(filename string, numScores int) Type {
 	t := new(Type)
 	t.scoresFile = filename
 	t.scoresRecord = [][]string{
 		[]string{"Name", "Points"},
 	}
 	t.configDirs = configdir.New("benjmarshall", "gopixelsnake")
+	t.numScores = numScores
 	t.LoadScores()
 	return *t
 }
 
 // AddScore pushes a new high score into the scores table
 func (t *Type) AddScore(score int, name string) {
-	t.scoresRecord = append(t.scoresRecord, []string{name, strconv.Itoa(score)})
+	record := t.getOrderedScores()
+	log.Printf("Adding score, current table:\n%v", record)
+	if len(record) > t.numScores {
+		t.scoresRecord = append(record[0:len(record)-1], []string{name, strconv.Itoa(score)})
+	} else {
+		t.scoresRecord = append(t.scoresRecord, []string{name, strconv.Itoa(score)})
+	}
+	log.Printf("Updated Table:\n%v", t.scoresRecord)
 	return
 }
 
 // GetTopScores returns the top n scores as a string slice, ordered in desecnding order of points
-func (t *Type) GetTopScores(n int) [][]string {
+func (t *Type) GetTopScores() [][]string {
 	topScoresSlice := [][]string{
 		[]string{"Pos.", "Name", "Points"},
 	}
@@ -61,6 +71,37 @@ func (t *Type) GetTopScores(n int) [][]string {
 	return topScoresSlice
 }
 
+func (t *Type) getOrderedScores() [][]string {
+
+	if len(t.scoresRecord) > 1 {
+		scoresTable := dataframe.LoadRecords(t.scoresRecord)
+		if scoresTable.Err != nil {
+			panic(scoresTable.Err)
+		}
+		orderedScores := scoresTable.Arrange(dataframe.RevSort("Points"))
+		if orderedScores.Err != nil {
+			panic(orderedScores.Err)
+		}
+		records := orderedScores.Records()
+		return records
+	}
+
+	return t.scoresRecord
+}
+
+// GetBottomScore returns the points value of the nth high score in descending order
+func (t *Type) GetBottomScore() int {
+	scores := t.GetTopScores()
+	if len(scores) < t.numScores {
+		return 0
+	}
+	score, err := strconv.Atoi(scores[t.numScores][2])
+	if err != nil {
+		return 0
+	}
+	return score
+}
+
 // SaveScores saves the scores to a csv file
 func (t *Type) SaveScores() {
 	// If we haven't got any scores stop now
@@ -79,7 +120,7 @@ func (t *Type) SaveScores() {
 	w := csv.NewWriter(f)
 	defer w.Flush()
 
-	scores := t.scoresRecord[1:len(t.scoresRecord)]
+	scores := t.scoresRecord[1 : len(t.scoresRecord)+1]
 
 	for _, value := range scores {
 		err := w.Write(value)

@@ -109,7 +109,7 @@ func NewGameText(win *pixelgl.Window, gameCFG game.Config) Type {
 		"Game Over!",
 		"You have a new high score.",
 		"Please type your name and then",
-		"press Enter to continue...",
+		"Press Enter to continue...",
 	}
 	t.gameover.text.Color = colornames.Black
 	t.gameover.drawScale = pixel.IM.Scaled(t.gameover.text.Orig, 3)
@@ -124,15 +124,22 @@ func (t *Type) DrawTitleText(win *pixelgl.Window) {
 }
 
 // DrawGameOverText draws the game over text on the provided window
-func (t *Type) DrawGameOverText(win *pixelgl.Window, gameCFG *game.Config, name string) {
+func (t *Type) DrawGameOverText(win *pixelgl.Window, gameCFG *game.Config, name string, highScore bool) {
 	t.gameover.text.Clear()
 	t.gameover.text.Dot.Y = t.gameover.text.Orig.Y
-	lines := t.gameoverText
-	if name == "" {
-		lines = append(lines, "___")
+	lines := []string{}
+	if highScore {
+		lines = append(lines, t.gameoverText...)
+		if name == "" {
+			lines = append(lines, "___")
+		} else {
+			lines = append(lines, name)
+		}
 	} else {
-		lines = append(lines, name)
+		lines = append(lines, t.gameoverText[0])
+		lines = append(lines, t.gameoverText[3])
 	}
+
 	for _, line := range lines {
 		t.gameover.text.Dot.X -= t.gameover.text.BoundsOf(line).W() / 2
 		fmt.Fprintln(t.gameover.text, line)
@@ -162,7 +169,7 @@ func (t *Type) DrawScoreText(win *pixelgl.Window, score int) {
 // DrawScoresListText draws the scores list on the provided window
 func (t *Type) DrawScoresListText(win *pixelgl.Window, gameCFG *game.Config, scoresTable *scores.Type) {
 	orig := gameCFG.GetWindowMatrix().Project(pixel.V(gameCFG.GetGameAreaAsRec().Min.X+35, gameCFG.GetGameAreaAsRec().Max.Y-50))
-	lines := scoresTable.GetTopScores(10)
+	lines := scoresTable.GetTopScores()
 	for i := 0; i < 3; i++ {
 		origY := orig.Y
 		origX := orig.X + (float64(i) * gameCFG.GetGameAreaAsRec().W() * 0.35)

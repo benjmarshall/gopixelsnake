@@ -41,7 +41,7 @@ func run() {
 	textStruct := gametext.NewGameText(win, gameCFG)
 
 	// Setup a scores structure
-	scoresTable := scores.NewScores("high_scores.csv")
+	scoresTable := scores.NewScores("high_scores.csv", 10)
 
 	// Initialize a new snake
 	s := snake.NewSnake(gameCFG)
@@ -70,6 +70,7 @@ func run() {
 		score          = 0
 		showScores     = false
 		scoreName      string
+		highScore      = false
 	)
 
 	// Draw the initial frames
@@ -149,6 +150,10 @@ func run() {
 				if !s.CheckSnakeOK(&gameCFG) {
 					gameOver = true
 					gameRunning = false
+					if score >= scoresTable.GetBottomScore() {
+						highScore = true
+					}
+					break
 				}
 				// Check if the snake has eaten
 				eaten = s.CheckIfSnakeHasEaten(&gameCFG, berry)
@@ -168,10 +173,13 @@ func run() {
 			// Game has ended, wait for user to continue
 			if win.JustPressed(pixelgl.KeyEnter) {
 				// Submit score and reset for a new game
-				scoresTable.AddScore(score, scoreName)
+				if highScore {
+					scoresTable.AddScore(score, scoreName)
+				}
 				// reset the board
 				scoreName = ""
 				gameOver = false
+				highScore = false
 				score = 0
 				berry = game.GenerateRandomBerry(&gameCFG)
 				s = snake.NewSnake(gameCFG)
@@ -198,7 +206,7 @@ func run() {
 			// Show the start game message
 			textStruct.DrawStartGameText(win)
 		} else if gameOver {
-			textStruct.DrawGameOverText(win, &gameCFG, scoreName)
+			textStruct.DrawGameOverText(win, &gameCFG, scoreName, highScore)
 		} else if showScores {
 			textStruct.DrawScoresListText(win, &gameCFG, &scoresTable)
 		}
