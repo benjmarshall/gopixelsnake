@@ -91,24 +91,20 @@ func run() {
 
 		if !gameRunning && !gameOver && !showScores {
 			// Game is not running so wait for user to do something!
-			startDir := snake.NOCHANGE
 			if win.JustPressed(pixelgl.KeyUp) {
-				startDir = s.StartOfGame(snake.UP)
+				s.StartOfGame(snake.UP)
 				gameRunning = true
 			} else if win.JustPressed(pixelgl.KeyDown) {
-				startDir = s.StartOfGame(snake.DOWN)
+				s.StartOfGame(snake.DOWN)
 				gameRunning = true
 			} else if win.JustPressed(pixelgl.KeyLeft) {
-				startDir = s.StartOfGame(snake.LEFT)
+				s.StartOfGame(snake.LEFT)
 				gameRunning = true
 			} else if win.JustPressed(pixelgl.KeyRight) {
-				startDir = s.StartOfGame(snake.RIGHT)
+				s.StartOfGame(snake.RIGHT)
 				gameRunning = true
 			} else if win.JustPressed(pixelgl.KeyX) {
 				exit(win, &scoresTable)
-			}
-			if startDir != snake.NOCHANGE {
-				inputKeyBuffer = append(inputKeyBuffer, startDir)
 			}
 			if win.JustPressed(pixelgl.KeyS) {
 				showScores = true

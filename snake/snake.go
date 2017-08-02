@@ -206,9 +206,12 @@ func (s *Type) CheckIfSnakeHasEaten(gameCFG *game.Config, berry pixel.Vec) bool 
 	return false
 }
 
+// BUG: Somewhere here we have a bug which makes the snake take an extra step formwards before responding to the next user input
+// if the game is started with a turn!
+
 // StartOfGame is used to allow the starting of the game with the arrow keys to choose
 // the initial direction of the snake.
-func (s *Type) StartOfGame(dir Direction) Direction {
+func (s *Type) StartOfGame(dir Direction) {
 	// Start the snake ticker now so it is synced with the users key press
 	// We use a goroutine running a channel multiplex here so we can
 	// send an immediate trigger to start the first frame
@@ -218,10 +221,7 @@ func (s *Type) StartOfGame(dir Direction) Direction {
 	go tickerMultiplex(s.tickerChannel, s.ticker.C, s.startChannel)
 	s.startChannel <- time.Now()
 
-	if dir == s.currentDirection {
-		// User has started in the direction we are facing, all good.
-		return NOCHANGE
-	} else if (dir == UP && s.currentDirection == DOWN) ||
+	if (dir == UP && s.currentDirection == DOWN) ||
 		(dir == DOWN && s.currentDirection == UP) ||
 		(dir == LEFT && s.currentDirection == RIGHT) ||
 		(dir == RIGHT && s.currentDirection == LEFT) {
@@ -230,10 +230,6 @@ func (s *Type) StartOfGame(dir Direction) Direction {
 		s.headPos = s.tailPos
 		s.tailPos = tempPos
 		s.currentDirection = dir
-		return NOCHANGE
-	} else {
-		// Must be a left or right turn, call standard update function.
-		return dir
 	}
 }
 
