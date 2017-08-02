@@ -1,7 +1,6 @@
 package snake
 
 import (
-	"log"
 	"math/rand"
 	"time"
 
@@ -68,8 +67,9 @@ func NewSnake(gameCFG game.Config) Type {
 		snake.currentDirection = UP
 	}
 	snake.tailPos = snake.headPos.Sub(snake.currentDirection.val.Scaled(snake.length - 1))
-	log.Println("__Snake Config__")
-	log.Printf("Direction: %v", snake.currentDirection)
+	// Debug
+	// log.Println("__Snake Config__")
+	// log.Printf("Direction: %v", snake.currentDirection)
 	return *snake
 }
 

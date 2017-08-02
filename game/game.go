@@ -2,7 +2,6 @@ package game
 
 import (
 	"errors"
-	"log"
 	"math"
 	"math/rand"
 	"time"
@@ -40,14 +39,14 @@ func NewGameConfig(xSize float64, ySize float64, borderWeight float64, gridSize 
 	gameCFG.gameGridMatrix = pixel.IM.Scaled(pixel.ZV, gridSize).Moved(pixel.V(gridSize/2, gridSize/2))
 	gameCFG.gameWindowMatrix = pixel.IM.Moved(pixel.V(gameAreaMargin, gameAreaMargin))
 	// Debug
-	log.Println("__Game Config__")
-	log.Printf("Game Area Margin: %v", gameAreaMargin)
-	log.Printf("Area Dims: %v", gameCFG.gameAreaDims)
-	log.Printf("Area Rectangle: %v", gameCFG.gameArea)
-	log.Printf("Border Thichness: %v", gameCFG.gameAreaBorderThickness)
-	log.Printf("Grid Size: %v", gameCFG.gameGridSize)
-	log.Printf("Grid Matrix: %v", gameCFG.gameGridMatrix)
-	log.Printf("Window Matrix: %v", gameCFG.gameWindowMatrix)
+	// log.Println("__Game Config__")
+	// log.Printf("Game Area Margin: %v", gameAreaMargin)
+	// log.Printf("Area Dims: %v", gameCFG.gameAreaDims)
+	// log.Printf("Area Rectangle: %v", gameCFG.gameArea)
+	// log.Printf("Border Thichness: %v", gameCFG.gameAreaBorderThickness)
+	// log.Printf("Grid Size: %v", gameCFG.gameGridSize)
+	// log.Printf("Grid Matrix: %v", gameCFG.gameGridMatrix)
+	// log.Printf("Window Matrix: %v", gameCFG.gameWindowMatrix)
 	return *gameCFG
 }
 
