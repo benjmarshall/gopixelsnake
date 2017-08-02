@@ -2,7 +2,6 @@ package scores
 
 import (
 	"encoding/csv"
-	"log"
 	"strconv"
 
 	"github.com/kniren/gota/dataframe"
@@ -33,13 +32,12 @@ func NewScores(filename string, numScores int) Type {
 // AddScore pushes a new high score into the scores table
 func (t *Type) AddScore(score int, name string) {
 	record := t.getOrderedScores()
-	log.Printf("Adding score, current table:\n%v", record)
 	if len(record) > t.numScores {
 		t.scoresRecord = append(record[0:len(record)-1], []string{name, strconv.Itoa(score)})
 	} else {
 		t.scoresRecord = append(t.scoresRecord, []string{name, strconv.Itoa(score)})
 	}
-	log.Printf("Updated Table:\n%v", t.scoresRecord)
+	t.SaveScores()
 	return
 }
 

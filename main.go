@@ -104,7 +104,7 @@ func run() {
 				s.StartOfGame(snake.RIGHT)
 				gameRunning = true
 			} else if win.JustPressed(pixelgl.KeyX) {
-				exit(win, &scoresTable)
+				win.SetClosed(true)
 			}
 			if win.JustPressed(pixelgl.KeyS) {
 				showScores = true
@@ -113,7 +113,7 @@ func run() {
 			if win.JustPressed(pixelgl.KeyS) {
 				showScores = false
 			} else if win.JustPressed(pixelgl.KeyX) {
-				exit(win, &scoresTable)
+				win.SetClosed(true)
 			}
 		}
 
@@ -220,9 +220,4 @@ func run() {
 		}
 
 	}
-}
-
-func exit(win *pixelgl.Window, s *scores.Type) {
-	s.SaveScores()
-	win.SetClosed(true)
 }
