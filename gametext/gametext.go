@@ -175,6 +175,7 @@ func (t *Type) DrawScoresListText(win *pixelgl.Window, gameCFG *game.Config, sco
 		origX := orig.X + (float64(i) * gameCFG.GetGameAreaAsRec().W() * 0.35)
 		text := text.New(pixel.V(origX, origY), t.atlas)
 		text.Color = colornames.Black
+		text.LineHeight *= 1.5
 		for _, line := range lines {
 			fmt.Fprintln(text, line[i])
 		}
