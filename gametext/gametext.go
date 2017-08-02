@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/benjmarshall/gosnake/game"
-	"github.com/benjmarshall/gosnake/scores"
+	"github.com/benjmarshall/gopixelsnake/game"
+	"github.com/benjmarshall/gopixelsnake/scores"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/pixelgl"
 	"github.com/faiface/pixel/text"

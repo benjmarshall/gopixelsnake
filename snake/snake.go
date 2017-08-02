@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/benjmarshall/gosnake/game"
+	"github.com/benjmarshall/gopixelsnake/game"
 	"github.com/faiface/pixel"
 )
 

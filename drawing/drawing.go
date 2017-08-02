@@ -1,8 +1,8 @@
 package drawing
 
 import (
-	"github.com/benjmarshall/gosnake/game"
-	"github.com/benjmarshall/gosnake/snake"
+	"github.com/benjmarshall/gopixelsnake/game"
+	"github.com/benjmarshall/gopixelsnake/snake"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
