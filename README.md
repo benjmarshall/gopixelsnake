@@ -18,3 +18,6 @@ go install
 ```
 ### Pre-built
 Alternatively download one of the pre-built binaries from the releases page.
+
+### Bugs
+There are probably many bugs in here. If you spot something major please submit an issue.
