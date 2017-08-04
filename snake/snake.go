@@ -241,7 +241,6 @@ func tickerMultiplex(out chan<- time.Time, tickerIn <-chan time.Time, startIn <-
 				return
 			}
 			out <- t
-		default:
 		}
 	}
 }
