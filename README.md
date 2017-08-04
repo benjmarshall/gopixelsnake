@@ -12,7 +12,7 @@ Go Pixel Snake uses the [go dep](https://github.com/golang/dep) tool to manage i
 ```
 go get github.com/golang/dep
 go get github.com/benjmarshall/gopixelsnake
-cd $GOPATH/src/github.con/benjmarshall/gopixelsnake
+cd $GOPATH/src/github.com/benjmarshall/gopixelsnake
 dep ensure
 go install
 ```
